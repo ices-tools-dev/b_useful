@@ -77,15 +77,20 @@ mod_home_server <- function(id, parent_session, selected_locations){
       temp_location <- str_replace_all(temp_location, " ", "_")
       temp_location <- tolower(temp_location)
       selected_locations(temp_location)
-    
+      
       tab_to_show <- switch(
         selected_locations(),
-        "greater_north_sea" = "results_gns",
         "baltic_sea" = "results_baltic",
-        "western_waters" = "results_ww",
-        "mediterranean" = "results_med",
-        "Home"
+        "barents_sea" = "results_barents",
+        "bay_of_biscay" = "results_biscay",
+        "greater_north_sea" = "results_gns",
+        "iberia" = "results_iberia",
+        "iceland" = "results_iceland",
+        "western_mediterranean" = "results_w_med",
+        "central-eastern_mediterranean" = "results_ce_med",
+        "north_east_atlantic" = "results_nea"
       )
+      
       updateNavbarPage(session = parent_session, inputId = "main-navbar", selected = tab_to_show)
     }, ignoreNULL = TRUE, ignoreInit = TRUE)
     

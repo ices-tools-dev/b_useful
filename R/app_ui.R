@@ -45,7 +45,7 @@ app_ui <- function(request) {
       fluid = TRUE,
       title = span(tags$img(src ="www/buseful-logo-RGB.png",
                             style = "padding-right:2px;padding-bottom:10px; padding-top:2px;",
-                            height = "50px"), "B-USEFUL Decision Support"),
+                            height = "50px"), "B-USEFUL Decision Support Tool"),
       tabPanel("Home", mod_home_ui("home_1")
                ),
       navbarMenu(title = "About",
@@ -66,15 +66,15 @@ app_ui <- function(request) {
                 tabPanel("Bay of Biscay", value = "results_biscay",
                          mod_results_ui("results_biscay")),
                 tabPanel("Greater North Sea", value = "results_gns",
-                         mod_results_ui("results_ns")),
-                tabPanel("Iberian Peninsula", value = "results_iberia",
+                         mod_results_ui("results_gns")),
+                tabPanel("Iberian Coasts", value = "results_iberia",
                          mod_results_ui("results_iberia")),
                 tabPanel("Iceland", value = "results_iceland",
                          mod_results_ui("results_iceland")),
                 tabPanel("Western Mediterranean", value = "results_w_med",
                          mod_results_ui("results_w_med")),
-                tabPanel("Eastern Mediterranean", value = "results_e_med",
-                         mod_results_ui("results_e_med"))
+                tabPanel("Central-Eastern Mediterranean", value = "results_ce_med",
+                         mod_results_ui("results_ce_med"))
                ),
       tabPanel("Resources", mod_resources_ui("resources_1")
       )
@@ -124,7 +124,7 @@ golem_add_external_resources <- function() {
     favicon(ext = "ico"),
     bundle_resources(
       path = app_sys("app/www"),
-      app_title = "b_useful"
+      app_title = "buseful"
     )
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()
