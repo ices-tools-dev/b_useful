@@ -28,13 +28,13 @@ mod_results_server <- function(id, case_study){
     output$dynamic_tabs <- renderUI({
       ns <- NS(id)  
       tabs <- list()
-        tabs[[length(tabs) + 1]] <- tabPanel("biodiversity",
-                                             #mod_wp3_ui(ns("wp3")),
+        tabs[[length(tabs) + 1]] <- tabPanel("Biodiversity",
+                                             mod_wp3_ui(ns("wp3")),
                                              value = "wp3")
-        tabs[[length(tabs) + 1]] <-  tabPanel("risk",
+        tabs[[length(tabs) + 1]] <-  tabPanel("Risk",
                                               #mod_wp4_ui(ns("wp4")),
                                               value = "wp4")
-        tabs[[length(tabs) + 1]] <- tabPanel("ecosystem_services", 
+        tabs[[length(tabs) + 1]] <- tabPanel("Ecosystem Services", 
                                              #mod_wp5_ui(ns("wp5")),
                                              value = "wp5")
       do.call(tabsetPanel, tabs)
@@ -55,14 +55,8 @@ mod_results_server <- function(id, case_study){
     })
     output$region_title <- renderText(display_region())
     
-    #mod_wp3_server("wp3", case_study)
+    mod_wp3_server("wp3", case_study)
     #mod_wp4_server("wp4", case_study)
     #mod_wp5_server("wp5", case_study)
   })
 }
-    
-## To be copied in the UI
-# mod_results_ui("results_baltic")
-    
-## To be copied in the server
-# mod_results_server("results_baltic")
