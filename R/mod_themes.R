@@ -26,7 +26,7 @@ mod_themes_ui <- function(id){
             href = "https://ices-taf.shinyapps.io/seawise/")))),
     
     card(
-      card_header("Risk", class = "bg-secondary"),
+      card_header("Risk", class = "bg-primary"),
       card_body(
         layout_column_wrap(
           width = NULL, fill = FALSE,
@@ -40,7 +40,7 @@ mod_themes_ui <- function(id){
           uiOutput(ns("risk"))))),
     
     card(
-      card_header("Ecosystem Services", class = "bg-success"),
+      card_header("Ecosystem Services", class = "bg-primary"),
       card_body(
         layout_column_wrap(
           width = NULL, fill = FALSE,

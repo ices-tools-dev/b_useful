@@ -13,21 +13,21 @@ mod_buseful_ui <- function(id){
    
     layout_column_wrap(heights_equal = "row", width = 1/2, fixed_width = FALSE, fillable = TRUE,
       card(
-        card_header("The B-USEFUL Objective", class = "bg-secondary"),
+        card_header("The B-USEFUL Objective", class = "bg-primary"),
                   uiOutput(ns("objective"))),
       card(
-        card_header("Research Themes", class = "bg-success"),
+        card_header("Research Themes", class = "bg-primary"),
         uiOutput(ns("themes")))
       ),
     layout_column_wrap(heights_equal = "row", width = 1/3, fixed_width = FALSE, fillable = TRUE,
       card(
-        card_header("Case Studies", class = "bg-info"),
+        card_header("Case Studies", class = "bg-primary"),
         uiOutput(ns("case_study_regions"))),
       card(
-        card_header("Partners", class = "bg-warning"),uiOutput(ns("who")),
+        card_header("Partners", class = "bg-primary"),uiOutput(ns("who")),
                   card_image(file = NULL, src = "img/normal-reproduction-high-resolution.jpg", height = "50px", width = "75px", border_radius = "all")),
       card(
-        card_header("The B-USEFUL Website", class = "bg-danger"),uiOutput(ns("website"))),
+        card_header("The B-USEFUL Website", class = "bg-primary"),uiOutput(ns("website"))),
       )
   )
 }

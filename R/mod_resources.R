@@ -15,11 +15,11 @@ mod_resources_ui <- function(id){
     card(
       card_header("Acknowledgements & Data Sources", class = "bg-primary"),
       tags$p(
-        "This Decision Support Tool has been developed as part of the ",
+        "This application has been developed by the International Council for the Exploration of the Sea (ICES) as part of the ",
         tags$a("B-USEFUL project", 
                href   = "https://b-useful.eu/", 
                target = "_blank", rel = "noopener noreferrer"),
-        ", funded by the European Union’s Horizon 2020 research and innovation programme (Grant Agreement No. 101059823), and coordinated by the International Council for the Exploration of the Sea (ICES)."
+        ", funded by the European Union’s Horizon 2020 research and innovation programme (Grant Agreement No. 101059823)."
       ),
       tags$p(
         "It integrates outputs from the B-USEFUL project. For full details on the research, see the ",
@@ -66,7 +66,7 @@ mod_resources_ui <- function(id){
         )
     ),
     card(card_header("Contact", class = "bg-primary"),
-         HTML('<p>If you experience problems with the B-USEFUL EBFM toolbox please <a href="accessions@ices.dk">let us know</a>.</p>')),
+         HTML('<p>If you experience problems with the B-USEFUL Decision Support Tool please <a href="accessions@ices.dk">let us know</a>.</p>')),
   )
 }
     
