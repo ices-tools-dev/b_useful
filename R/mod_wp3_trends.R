@@ -22,8 +22,10 @@ mod_wp3_trends_ui <- function(id) {
                                                                    "Functional Evenness" = "feve",
                                                                    "Functional Dispersion" = "fdis",
                                                                    "Functional Diversity" = "fdiv"))),
-         plotOutput(outputId = ns("biodiv_animation"), height = "75vh")))
- 
+                        fluidRow(column(width = 6, card(card_header("Animation"), plotOutput(outputId = ns("biodiv_animation"), height = "75vh"))),
+                                 column(width = 6, card(card_header("Trend 2010-2020"), plotOutput(outputId = ns("biodiv_trends"), height = "75vh"))))
+                        )
+    )
   )
 }
     
@@ -54,6 +56,7 @@ mod_wp3_trends_server <- function(id, map_parameters){
     output$biodiv_animation <- renderPlot({
       req(animation_data())
       req(map_parameters())
+      req(input$diversity_idx)
       
       p <- ggplot() +
         geom_point(data = animation_data(), aes(x = longitude, y = latitude, color = !!rlang::sym(input$diversity_idx)), size = 2) +
@@ -66,6 +69,27 @@ mod_wp3_trends_server <- function(id, map_parameters){
         ylab("Latitude")+
         xlab("Longitude") +
         facet_wrap(~Year)
+      p
+    })
+    
+    trend_data <- readRDS("data/fish_diversity_trends.rds")
+    
+    output$biodiv_trends <- renderPlot({
+      
+      req(trend_data)
+      req(map_parameters())
+      req(input$diversity_idx)
+      var <- paste0(input$diversity_idx, "_trend")
+      # browser()
+      p <- ggplot() +
+        geom_point(data = trend_data, aes(x = longitude, y = latitude, color = .data[[var]]), size = 2) +
+        scale_color_gradientn(colours = rev(brewer.pal(11, "RdYlBu")))+
+        geom_sf(data = map_shape, fill = "grey")+
+        scale_x_continuous(breaks= map_parameters()$coordxmap)+
+        scale_y_continuous(breaks= map_parameters()$coordymap,expand=c(0,0))+
+        coord_sf(xlim=c(map_parameters()$coordslim[1], map_parameters()$coordslim[2]), ylim=c(map_parameters()$coordslim[3],map_parameters()$coordslim[4]))+
+        ylab("Latitude")+
+        xlab("Longitude")
       p
     })
   })
