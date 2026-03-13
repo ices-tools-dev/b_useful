@@ -4,6 +4,7 @@
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @importFrom bslib bs_theme
+#' @importFrom icesUtils navbar_dropdown_autoclose_js image_fullscreen_on_click_js
 #' @noRd
 app_ui <- function(request) {
   tagList(
@@ -11,16 +12,6 @@ app_ui <- function(request) {
     golem_add_external_resources(),
     # Your application UI logic
     navbarPage(
-      # JavaScript to close dropdown with mouseclick
-      tags$script(HTML("
- $(document).on('shiny:sessioninitialized', function() {
-  $(document).on('click', function(event) {
-    if (!$(event.target).closest('.navbar').length) {
-      $('ul.navbar-nav .dropdown').removeClass('show').find('.dropdown-menu').removeClass('show');
-    }
-  });
-});
-  ")),
       theme = bs_theme("lumen", version = 5),
       # Custom CSS to highlight active tab
       tags$style(HTML("
@@ -125,7 +116,9 @@ golem_add_external_resources <- function() {
     bundle_resources(
       path = app_sys("app/www"),
       app_title = "buseful"
-    )
+    ),
+  image_fullscreen_on_click_js(),
+  navbar_dropdown_autoclose_js()
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()
   )
