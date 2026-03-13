@@ -57,9 +57,9 @@ mod_wp3_server <- function(id, case_study){
     })
     
     
-    mod_wp3_time_comparison_server("wp3_time_comparison_1", map_parameters = map_parameters)
-    mod_wp3_trends_server("wp3_trends_1", map_parameters = map_parameters)
-    mod_wp3_interactive_comparison_server("wp3_interactive_comparison_1", map_parameters = map_parameters)
+    mod_wp3_time_comparison_server("wp3_time_comparison_1", map_parameters = map_parameters, case_study = case_study)
+    mod_wp3_trends_server("wp3_trends_1", map_parameters = map_parameters, case_study = case_study)
+    mod_wp3_interactive_comparison_server("wp3_interactive_comparison_1", map_parameters = map_parameters, case_study = case_study)
      
   })
 }

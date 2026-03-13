@@ -28,15 +28,15 @@ mod_results_server <- function(id, case_study){
     output$dynamic_tabs <- renderUI({
       ns <- NS(id)  
       tabs <- list()
-        tabs[[length(tabs) + 1]] <- tabPanel("Biodiversity",
+        tabs[[length(tabs) + 1]] <- tabPanel("Work Package 3",
                                              mod_wp3_ui(ns("wp3")),
                                              value = "wp3")
-        tabs[[length(tabs) + 1]] <-  tabPanel("Risk",
-                                              #mod_wp4_ui(ns("wp4")),
-                                              value = "wp4")
-        tabs[[length(tabs) + 1]] <- tabPanel("Ecosystem Services", 
-                                             #mod_wp5_ui(ns("wp5")),
-                                             value = "wp5")
+        # tabs[[length(tabs) + 1]] <-  tabPanel("Risk",
+        #                                       #mod_wp4_ui(ns("wp4")),
+        #                                       value = "wp4")
+        # tabs[[length(tabs) + 1]] <- tabPanel("Ecosystem Services", 
+        #                                      #mod_wp5_ui(ns("wp5")),
+        #                                      value = "wp5")
       do.call(tabsetPanel, tabs)
     })
     
