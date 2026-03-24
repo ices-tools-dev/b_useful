@@ -9,7 +9,7 @@
 #'
 #' @importFrom shiny NS tagList 
 #' @importFrom bslib card card_header card_body card_image layout_column_wrap
-#' @importFrom leaflet leafletOutput leafletProxy hideGroup showGroup 
+#' @importFrom leaflet leafletOutput leafletProxy hideGroup showGroup renderLeaflet
 #' @importFrom shinyWidgets virtualSelectInput updateVirtualSelect
 #' @importFrom stringr str_replace_all 
 #' @importFrom icesUtils select_text
@@ -64,7 +64,7 @@ mod_home_server <- function(id, parent_session, selected_locations){
     ns <- session$ns
  
     
-    output$map <- leaflet::renderLeaflet({
+    output$map <- renderLeaflet({
       print("Rendering map")
       print(paste("eco_shape dimensions:", nrow(eco_shape), "x", ncol(eco_shape)))
       print(paste("map_shape dimensions:", nrow(map_shape), "x", ncol(map_shape)))

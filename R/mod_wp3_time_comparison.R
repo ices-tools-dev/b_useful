@@ -7,6 +7,7 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
+#' @importFrom rlang sym
 mod_wp3_time_comparison_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -46,7 +47,7 @@ mod_wp3_time_comparison_server <- function(id, map_parameters, case_study){
       req(map_parameters())
       
       p <- ggplot() +
-        geom_point(data = reactive_data(), aes(x = longitude, y = latitude, color = !!rlang::sym(input$diversity_idx)), size = input$point_size) +
+        geom_point(data = reactive_data(), aes(x = longitude, y = latitude, color = !!sym(input$diversity_idx)), size = input$point_size) +
         scale_color_gradientn(colours = rev(brewer.pal(11, "RdYlBu")))+
         geom_sf(data = map_shape, fill = "grey")+
         scale_x_continuous(breaks= map_parameters()$coordxmap)+

@@ -22,7 +22,8 @@ Imports:
     RColorBrewer,
     shiny (>= 1.9.1),
     shinyWidgets,
-    stringr
+    stringr,
+    tidyr
 Remotes: url::https://ices-tools-prod.r-universe.dev/icesUtils
 Encoding: UTF-8
 LazyData: true
