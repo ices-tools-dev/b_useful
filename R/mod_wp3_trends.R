@@ -12,43 +12,7 @@
 mod_wp3_trends_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    tags$script(HTML(sprintf("
-    (function() {
-      const sliderId = '%s';
-      let tries = 0;
-
-      function autoPlaySlider() {
-        const el = document.getElementById(sliderId);
-        if (!el) {
-          if (tries++ < 40) setTimeout(autoPlaySlider, 250);
-          return;
-        }
-
-        const container = el.parentElement;
-        if (!container) {
-          if (tries++ < 40) setTimeout(autoPlaySlider, 250);
-          return;
-        }
-
-        const playBtn = container.querySelector('.slider-animate-button');
-        if (!playBtn) {
-          if (tries++ < 40) setTimeout(autoPlaySlider, 250);
-          return;
-        }
-
-        if (!playBtn.classList.contains('playing')) {
-          playBtn.click();
-        }
-      }
-
-      document.addEventListener('DOMContentLoaded', autoPlaySlider);
-      $(document).on('shiny:connected', autoPlaySlider);
-      setTimeout(autoPlaySlider, 500);
-    })();
-  ", ns("year_slider")))),
-    card(layout_sidebar(sidebar = sidebar(sliderTextInput(inputId = ns("year_slider"),label = "Year", choices = as.character(2010:2020), selected = "2010",
-                                                  animate = animationOptions(interval = 1250, loop = TRUE)),
-                                          radioButtons(ns("diversity_idx"), label = "Select diversity index", 
+    card(layout_sidebar(sidebar = sidebar(radioButtons(ns("diversity_idx"), label = "Select diversity index", 
                                                        choices = c("Species Richness" = "Richness",
                                                                    "Evenness" = "evenness",
                                                                    "Shannon Index" = "shannon",
@@ -91,14 +55,14 @@ mod_wp3_trends_server <- function(id, map_parameters, case_study){
     output$biodiv_animation <- renderUI({
 
       req(input$diversity_idx)
-      req(input$year_slider)
       
-      make_biodiversity_img_tag(ecoregion = case_study, taxon = "taxon", 
-                 metric = input$diversity_idx,
-                 result_type = "status", 
-                 year = input$year_slider,
+      eco_acronym <- "NrS"
+      metric_name <- str_replace_all(tolower(input$diversity_idx), " ", "_")
+      file_name <- paste0(paste(eco_acronym, "taxon", metric_name, "status", sep = "_"), ".gif")
+      
+      make_img_tag(filename = file_name,
                  ns = ns)
-    })
+    }) %>% bindCache(input$diversity_idx)
     
     trend_data <- readRDS("data/fish_diversity_trends.rds")
     

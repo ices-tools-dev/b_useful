@@ -32,3 +32,25 @@ make_biodiversity_img_tag <- function(ecoregion, taxon, metric, result_type, yea
     onclick = "toggleFullScreen(this)"
   )
 }
+
+
+make_img_tag <- function(filename, ns) {
+  
+  # Web path used by img tag
+  webpath <- file.path("www/wp3", filename)
+  
+  # Filesystem path used for existence check
+  file_systempath <- app_sys("app/www/wp3", filename)
+  
+  validate(
+    need(file.exists(file_systempath),
+         "File not available")
+  )
+  
+  tags$img(
+    id = ns(filename),
+    src = webpath,
+    style = "width: 100%; cursor: pointer;",
+    onclick = "toggleFullScreen(this)"
+  )
+}
