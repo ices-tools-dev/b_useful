@@ -11,6 +11,7 @@
 #' @importFrom dplyr filter mutate where across select summarise
 #' @importFrom tidyr pivot_longer
 #' @importFrom bslib card layout_sidebar sidebar layout_column_wrap card_body
+#' @importFrom stringr str_to_title
 mod_wp3_interactive_comparison_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -24,10 +25,15 @@ mod_wp3_interactive_comparison_ui <- function(id) {
                                                                    "Functional Evenness" = "feve",
                                                                    "Functional Dispersion" = "fdis",
                                                                    "Functional Diversity" = "fdiv"),
-                                                       selected = c("Richness", "evenness", "shannon"))),
+                                                       selected = c("Richness", "evenness", "shannon")),
+                                          radioButtons(ns("content_type"), label = "Select Display", 
+                                                       choices = c("Maps", "Histograms"),
+                                                       selected = "Maps"
+                                                      )),
                         uiOutput(ns("plot_panel"), fill = TRUE))),
     card(fluidRow(column(width = 4, 
                          card(card_header("Drag to select, double-click to deselect"),
+                              full_screen = T, 
                               card_body(padding = 0, plotOutput(outputId = ns("biodiv_compare"), 
                                          brush = ns("plot_brush"),
                                          dblclick = ns("plot_reset"), 
@@ -47,21 +53,47 @@ mod_wp3_interactive_comparison_server <- function(id, map_parameters, case_study
     ns <- session$ns
     
     output$plot_panel <- renderUI({
+      req(input$content_type, input$diversity_idx, input$year_selector)
       
-      cards <- list()
+      cards <- vector("list", length(input$diversity_idx))
       
-      for(i in seq_along(input$diversity_idx)) {
-        cards[[i]] <- card(min_height = "25vh",
-                           card_header(toupper(input$diversity_idx[i])),
-                           card_body(padding = 0,
-                                     make_biodiversity_img_tag(ecoregion = case_study, 
-                                                     taxon = "taxon", 
-                                                     metric = input$diversity_idx[i],
-                                                     result_type = "status", 
-                                                     year = input$year_selector,
-                                                     ns = ns)))
+      for (i in seq_along(input$diversity_idx)) {
+        idx <- input$diversity_idx[i]
+        plot_id <- paste0("hist_", i)
+        
+        if (input$content_type == "Histograms") {
+          local({
+            my_idx <- idx
+            my_plot_id <- plot_id
+            
+            output[[my_plot_id]] <- renderPlot({
+              ggplot(hist_data(), aes(x = .data[[my_idx]], after_stat(density), fill = Selected)) +
+              geom_histogram(bins = 20)
+           
+            })
+          })
+        }
+        
+        cards[[i]] <- card(
+          min_height = "25vh",
+          card_header(str_to_title(idx)),
+          card_body(
+            padding = 0,
+            if (input$content_type == "Maps") {
+              make_img_tag(
+                filename = paste0(
+                  paste("NrS", "taxon", idx, "status", input$year_selector, sep = "_"),
+                  ".png"
+                ),
+                ns = ns
+              )
+            } else if (input$content_type == "Histograms") {
+              plotOutput(ns(plot_id), height = "100%")
+            }
+          )
+        )
       }
-    
+      
       do.call(layout_column_wrap, c(cards, list(width = "400px")))
     })
     
@@ -71,6 +103,7 @@ mod_wp3_interactive_comparison_server <- function(id, map_parameters, case_study
       brushed <- brushedPoints(fish_diversity, input$plot_brush, allRows = TRUE)$selected_
       selected_points(brushed | selected_points())
     })
+    
     observeEvent(input$plot_reset, {
       selected_points(rep(FALSE, nrow(fish_diversity)))
     })
@@ -95,35 +128,46 @@ mod_wp3_interactive_comparison_server <- function(id, map_parameters, case_study
       p
     })
     
+    hist_data <- reactive({
+      dat <- fish_diversity 
+      dat$Selected <- selected_points()
+      dat <- dat[dat$Year == input$year_selector,]
+    })
+    
     output$summary_dt <- renderDT({
       req(fish_diversity)
       req(input$year_selector)
       req(sum(selected_points())>0)
       
       dat <- fish_diversity[selected_points(),]
+      dat <- dat[dat$Year == input$year_selector,]
       
       dat %>%
         select(all_of(input$diversity_idx)) %>%
-        summarise(across(
-          everything(),
-          list(
-            Min = ~round(min(.x, na.rm = TRUE), digits = 2),
-            "25th Percentile" = ~round(quantile(.x, digits = 2)[2]),
-            Median = ~round(quantile(.x, digits = 2)[3]),
-            "75th Percentile" = ~round(quantile(.x, digits = 2)[4]),
-            Max = ~round(max(.x, na.rm = TRUE), digits = 2),
-            Mean = ~round(mean(.x, na.rm = TRUE),  digits = 2),
-            SD = ~round(sd(.x, na.rm = TRUE), digits = 2)
+        summarise(
+          across(
+            everything(),
+            list(
+              Min = ~ round(min(.x, na.rm = TRUE), 2),
+              `25th Percentile` = ~ round(quantile(.x, probs = 0.25, na.rm = TRUE), 2),
+              Median = ~ round(median(.x, na.rm = TRUE), 2),
+              `75th Percentile` = ~ round(quantile(.x, probs = 0.75, na.rm = TRUE), 2),
+              Max = ~ round(max(.x, na.rm = TRUE), 2),
+              Mean = ~ round(mean(.x, na.rm = TRUE), 2),
+              SD = ~ round(sd(.x, na.rm = TRUE), 2),
+              CV = ~ round(sd(.x, na.rm = TRUE)/mean(.x, na.rm = TRUE),2)
+            )
           )
-        )) %>%
+        ) %>%
         pivot_longer(
           cols = everything(),
           names_to = c("Metric", ".value"),
           names_sep = "_"
         ) %>%
-        datatable(options = list(dom =""),
-                  rownames = FALSE)
-          
+        datatable(
+          options = list(dom = ""),
+          rownames = FALSE
+        )
     })
     
     output$detail_dt <- renderDT({
@@ -131,16 +175,13 @@ mod_wp3_interactive_comparison_server <- function(id, map_parameters, case_study
       req(input$year_selector)
       req(selected_points)
       
-      dat <- fish_diversity[selected_points(),]
-      res <- fish_diversity %>%
+      res <- fish_diversity[selected_points(),] %>%
         select(c(Year, Cell, longitude, latitude, Richness, shannon, evenness, fric, feve, fdis, fdiv)) %>% 
         filter(Year == input$year_selector) %>% 
-        mutate(across(where(is.double) & !c(longitude, latitude), ~round(.x, digits = 1))) %>% 
+        mutate(across(where(is.double) & -c(longitude, latitude), ~round(.x, digits = 1))) %>% 
         mutate(across(c(longitude, latitude), ~round(.x, digits = 4)))
       
       datatable(res)
     })
-    
-    
   })
 }
