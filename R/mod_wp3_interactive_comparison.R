@@ -11,7 +11,10 @@
 #' @importFrom dplyr filter mutate where across select summarise
 #' @importFrom tidyr pivot_longer
 #' @importFrom bslib card layout_sidebar sidebar layout_column_wrap card_body
-#' @importFrom stringr str_to_title
+#' @importFrom stringr str_to_title str_replace_all
+#' @importFrom sf st_within
+#' @importFrom mapgl get_drawn_features renderMaplibre maplibreOutput maplibre add_circle_layer add_draw_control get_drawn_features maplibre_proxy clear_layer
+#' @importFrom shinycssloaders withSpinner
 mod_wp3_interactive_comparison_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -31,14 +34,16 @@ mod_wp3_interactive_comparison_ui <- function(id) {
                                                        selected = "Maps"
                                                       )),
                         uiOutput(ns("plot_panel"), fill = TRUE))),
-    card(fluidRow(column(width = 4, 
+    card(fluidRow(column(width = 5, 
                          card(card_header("Drag to select, double-click to deselect"),
                               full_screen = T, 
-                              card_body(padding = 0, plotOutput(outputId = ns("biodiv_compare"), 
-                                         brush = ns("plot_brush"),
-                                         dblclick = ns("plot_reset"), 
-                                         height = "35vh")))),
-                  column(width = 8, 
+                              card_body(padding = 0, 
+                                        height = "35vh",
+                                        withSpinner(maplibreOutput(ns("interactive_map")))
+                                        ) 
+                              )
+                         ),
+                  column(width = 7, 
                          card(card_header("Summary Statistics"),
                          DTOutput(ns("summary_dt")))))),
     card(DTOutput(outputId = ns("detail_dt")))
@@ -74,6 +79,10 @@ mod_wp3_interactive_comparison_server <- function(id, map_parameters, case_study
           })
         }
         
+        eco_acronym <- "NrS"
+        metric_name <- str_replace_all(tolower(idx), " ", "_")
+        file_name <- paste0(paste(eco_acronym, "taxon", metric_name, "status", input$year_selector, sep = "_"),".png")
+        
         cards[[i]] <- card(
           min_height = "25vh",
           card_header(str_to_title(idx)),
@@ -81,10 +90,7 @@ mod_wp3_interactive_comparison_server <- function(id, map_parameters, case_study
             padding = 0,
             if (input$content_type == "Maps") {
               make_img_tag(
-                filename = paste0(
-                  paste("NrS", "taxon", idx, "status", input$year_selector, sep = "_"),
-                  ".png"
-                ),
+                filename = file_name,
                 ns = ns
               )
             } else if (input$content_type == "Histograms") {
@@ -97,16 +103,54 @@ mod_wp3_interactive_comparison_server <- function(id, map_parameters, case_study
       do.call(layout_column_wrap, c(cards, list(width = "400px")))
     })
     
+    grid_low_res <- readRDS("data/grid_lov_res.rds")
+    
+    output$interactive_map <- renderMaplibre({
+      maplibre(bounds = fish_div_spatial, dragRotate=FALSE) %>% 
+        add_circle_layer(id = "centroid",
+                         source = grid_low_res,
+                         circle_radius = 3,
+                         circle_stroke_color = "white",
+                         circle_stroke_width = 2) %>%
+        add_draw_control(position = "top-left",freehand = TRUE, rectangle = TRUE, draw_line_string = FALSE)
+    })
+    
+    observeEvent(input$interactive_map_drawn_features, {
+    
+      drawn <- input$interactive_map_drawn_features
+      
+      if (!is.null(drawn)) {
+        
+        brushed_points <- rep(FALSE, times = nrow(fish_div_spatial))
+        drawn_sf <- get_drawn_features(maplibre_proxy("interactive_map"))
+
+        brushed_points <- tryCatch({
+          within <- st_within(fish_div_spatial, drawn_sf, sparse = FALSE)
+          rowSums(within) >= 1
+        },
+          error = function(e) e)
+        if (inherits(brushed_points, "error")) {
+          showNotification("Invalid shape provided, please delete and try again", type = "error", duration = 10)
+          validate(
+            need(FALSE, paste("ERROR:", conditionMessage(brushed_points)))
+          )
+        }
+  
+        maplibre_proxy("interactive_map") %>% 
+          clear_layer("highlights") %>% 
+          add_circle_layer(
+            id = "highlights",
+            source = fish_div_spatial[brushed_points,],
+            circle_color = "red",
+            circle_radius = 5,
+            circle_stroke_color = "white",
+            circle_stroke_width = 2
+          )
+        selected_points(brushed_points)
+      }
+    })
+    
     selected_points <- reactiveVal(rep(FALSE, nrow(fish_diversity)))
-    
-    observeEvent(input$plot_brush, {
-      brushed <- brushedPoints(fish_diversity, input$plot_brush, allRows = TRUE)$selected_
-      selected_points(brushed | selected_points())
-    })
-    
-    observeEvent(input$plot_reset, {
-      selected_points(rep(FALSE, nrow(fish_diversity)))
-    })
     
     output$biodiv_compare <- renderPlot({
       req(fish_diversity)
