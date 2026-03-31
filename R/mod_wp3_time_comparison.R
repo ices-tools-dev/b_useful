@@ -8,6 +8,7 @@
 #'
 #' @importFrom shiny NS tagList 
 #' @importFrom rlang sym
+#' @importFrom shinycssloaders withSpinner
 mod_wp3_time_comparison_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -20,8 +21,7 @@ mod_wp3_time_comparison_ui <- function(id) {
                                                  selected = c("2010", "2015", "2020")),
                                   sliderInput(ns("point_size"), label = "Adjust point size in plot", min = 0.75, max = 2.5, value = 1.5, round = -1)),
                         card_body(padding = 0,
-                                  verbatimTextOutput(ns("dimension_display")),
-                                  plotOutput(ns("div_plot")))))
+                                  withSpinner(plotOutput(ns("div_plot"), height = "70vh")))))
   )
 }
     

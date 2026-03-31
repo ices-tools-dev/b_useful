@@ -9,6 +9,7 @@
 #' @importFrom shiny NS tagList 
 #' @importFrom bslib layout_sidebar sidebar 
 #' @importFrom dplyr pull
+#' @importFrom shinycssloaders withSpinner
 mod_wp3_trends_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -23,12 +24,12 @@ mod_wp3_trends_ui <- function(id) {
                         fluidRow(column(width = 6, card(height = "75vh",
                                                         card_header("Animation"), 
                                                         card_body(padding = 0,
-                                                        uiOutput(outputId = ns("biodiv_animation")))
+                                                        withSpinner(uiOutput(outputId = ns("biodiv_animation"))))
                                                         )),
                                  column(width = 6, card(height = "75vh",
                                                         card_header("Trend 2010-2020"), 
                                                         card_body(padding = 20,
-                                                        plotOutput(outputId = ns("biodiv_trends")))))
+                                                        withSpinner(plotOutput(outputId = ns("biodiv_trends"), height = "70vh")))))
                                  )
                         )
     )
@@ -72,7 +73,7 @@ mod_wp3_trends_server <- function(id, map_parameters, case_study){
       req(map_parameters())
       req(input$diversity_idx)
       var <- paste0(input$diversity_idx, "_trend")
-      # browser()
+  
       p <- ggplot() +
         geom_point(data = trend_data, aes(x = longitude, y = latitude, color = .data[[var]]), size = 2) +
         scale_color_gradientn(colours = rev(brewer.pal(11, "RdYlBu")))+
