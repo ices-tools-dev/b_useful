@@ -8,6 +8,7 @@
 #' @noRd
 app_ui <- function(request) {
   tagList(
+    tags$a(name="top"),
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # Your application UI logic
@@ -28,7 +29,11 @@ app_ui <- function(request) {
       background-color: #efeff0;
       color: #333;
     }
-  ")),
+  .navbar, .bslib-page-navbar {
+    position: relative;
+    z-index: 2000;
+  }
+  ")), 
       position = "static-top",
       collapsible = TRUE,
       windowTitle = "B-USEFUL Decision Support Tool",
@@ -37,16 +42,16 @@ app_ui <- function(request) {
       title = span(tags$img(src ="www/buseful-logo-RGB.png",
                             style = "padding-right:2px;padding-bottom:10px; padding-top:2px;",
                             height = "50px"), "B-USEFUL Decision Support Tool"),
-      tabPanel("Home", mod_home_ui("home_1")
-               ),
-      navbarMenu(title = "About",
-                 tabPanel("B-USEFUL project",
-                        mod_buseful_ui("buseful_1")),
-                 tabPanel("Themes",
-                          mod_themes_ui("themes_1")),
-                 tabPanel("Case Studies",
-                          mod_case_studies_ui("case_studies_1")),
-               ),
+      tabPanel("Home", mod_home_ui("home_1")),
+      tabPanel("Background", mod_story_map_ui("story_map_1")),
+      # navbarMenu(title = "About",
+      #            tabPanel("B-USEFUL project",
+      #                   mod_buseful_ui("buseful_1")),
+      #            tabPanel("Themes",
+      #                     mod_themes_ui("themes_1")),
+      #            tabPanel("Case Studies",
+      #                     mod_case_studies_ui("case_studies_1")),
+      #          ),
       navbarMenu("Results",
                 tabPanel("North East Atlantic", value = "results_nea",
                          mod_results_ui("results_nea")),

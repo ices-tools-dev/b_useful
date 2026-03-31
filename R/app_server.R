@@ -8,6 +8,8 @@ app_server <- function(input, output, session) {
   # Your application server logic
   selected_locations <- reactiveVal(NULL)
   
+  mod_story_map_server("story_map_1")
+  
   mod_home_server("home_1", parent_session = session, selected_locations = selected_locations)
   #mod_biodiversity_server("biodiversity_1")
   #mod_decision_support_server("decision_support_1")
