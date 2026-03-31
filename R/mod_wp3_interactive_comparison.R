@@ -33,9 +33,9 @@ mod_wp3_interactive_comparison_ui <- function(id) {
                                                        choices = c("Maps", "Histograms"),
                                                        selected = "Maps"
                                                       )),
-                        uiOutput(ns("plot_panel"), fill = TRUE))),
+                        withSpinner(uiOutput(ns("plot_panel"), fill = TRUE)))),
     card(fluidRow(column(width = 5, 
-                         card(card_header("Drag to select, double-click to deselect"),
+                         card(card_header("Use the drawing tools to select map areas for more detail"),
                               full_screen = T, 
                               card_body(padding = 0, 
                                         height = "35vh",
@@ -112,7 +112,17 @@ mod_wp3_interactive_comparison_server <- function(id, map_parameters, case_study
                          circle_radius = 3,
                          circle_stroke_color = "white",
                          circle_stroke_width = 2) %>%
-        add_draw_control(position = "top-left",freehand = TRUE, rectangle = TRUE, draw_line_string = FALSE)
+        add_draw_control(position = "top-left",
+                         freehand = TRUE, 
+                         trash = TRUE,
+                         rectangle = TRUE,
+                         controls = list(
+                            trash = TRUE,
+                            point = FALSE,
+                            line_string = FALSE,
+                            combine_features = FALSE,
+                            uncombine_features = FALSE)
+                         )
     })
     
     observeEvent(input$interactive_map_drawn_features, {
