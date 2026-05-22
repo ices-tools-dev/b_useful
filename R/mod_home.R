@@ -17,6 +17,14 @@
 mod_home_ui <- function(id){
   ns <- NS(id)
   tagList(
+    modalDialog(
+      title = "Welcome to the Development version of the B-USEFUL Decision Support Tool (DST)",
+      uiOutput(ns("modal")),
+      footer = modalButton("Accept"),
+      size = c("l"),
+      easyClose = FALSE,
+      fade = TRUE
+    ),
     card(
       card_header("Welcome to the B-USEFUL Decision Support Tool", class = "bg-primary"),
       div(
@@ -95,6 +103,10 @@ mod_home_server <- function(id, parent_session, selected_locations){
     }, ignoreNULL = TRUE, ignoreInit = TRUE)
     
     
+    output$modal <- renderUI({
+      text <- paste(select_text(project_texts, "landing_page", "stakeholder_modal"))
+      HTML(text)
+    })
     output$welcome <- renderUI({
       text <- paste(select_text(project_texts, "landing_page", "welcome"))
       HTML(text)
