@@ -9,45 +9,40 @@
 #' @importFrom shiny NS tagList 
 #' @importFrom rlang sym
 #' @importFrom shinycssloaders withSpinner
+#' @importFrom stringr str_replace_all str_to_title
+#' @importFrom bslib navset_card_tab nav_panel
 mod_wp3_time_comparison_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    card(height = "75vh",
-         layout_sidebar(sidebar = 
-                          sidebar(radioButtons(ns("diversity_idx"), label = "Select diversity index", choices = c("Species Richness" = "Richness", "Evenness" = "evenness", "Shannon Index" = "shannon", "Functional Richness" = "fric", "Functional Evenness" = "feve", "Functional Dispersion" = "fdis", "Functional Diversity" = "fdiv")),
-                                  selectizeInput(inputId = ns("year_selector"), "Select Year(s)",
-                                                 multiple = TRUE,
-                                                 choices = 2010:2020,
-                                                 selected = c("2010", "2015", "2020")),
-                                  sliderInput(ns("point_size"), label = "Adjust point size in plot", min = 0.75, max = 2.5, value = 1.5, round = -1)),
-                        card_body(padding = 0,
-                                  withSpinner(plotOutput(ns("div_plot"), height = "70vh")))))
+      card_body(padding = 0,
+                min_height = "50vh",
+                withSpinner(plotOutput(ns("div_plot"), 
+                           height = "70vh"))),
+      card("Figure Information", uiOutput(ns("fig_text")), height = "20vh")
   )
 }
     
 #' wp3_time_comparison Server Functions
 #'
 #' @noRd 
-mod_wp3_time_comparison_server <- function(id, map_parameters, case_study){
+mod_wp3_time_comparison_server <- function(id, map_parameters, case_study, diversity_data, diversity_idx, selected_years){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
     reactive_data <- reactive({
-      req(fish_diversity)
-      req(input$year_selector)
-      dat <- fish_diversity %>% 
-        filter(Year %in% input$year_selector)
+      req(diversity_data)
+      req(selected_years())
+      dat <- diversity_data %>% 
+        filter(Year %in% selected_years())
     })
-    
-    
+
     output$div_plot <- renderPlot({
       req(reactive_data())
-      req(input$diversity_idx)
-      req(input$point_size)
+      req(diversity_idx())
       req(map_parameters())
       
       p <- ggplot() +
-        geom_point(data = reactive_data(), aes(x = longitude, y = latitude, color = !!sym(input$diversity_idx)), size = input$point_size) +
+        geom_point(data = reactive_data(), aes(x = longitude, y = latitude, color = !!sym(diversity_idx())), size = 2) +
         scale_color_gradientn(colours = rev(brewer.pal(11, "RdYlBu")))+
         geom_sf(data = map_shape, fill = "grey")+
         scale_x_continuous(breaks= map_parameters()$coordxmap)+
@@ -56,10 +51,23 @@ mod_wp3_time_comparison_server <- function(id, map_parameters, case_study){
         ylab("Latitude")+
         xlab("Longitude")
       
-      if (length(input$year_selector>1)){
+      if (length(selected_years()>1)){
         p <- p + facet_wrap(~Year)
       } 
       p
+    })
+    
+    output$fig_text <- renderText({
+      diversity_indicator <- input$diversity_idx
+      ecoregion <- str_to_title(str_replace_all(case_study(), pattern = "_", replacement = " "))
+      if(case_study() == "greater_north_sea"){
+        taxon <- "Fish"
+      } else {
+        taxon <- "Demersal"
+      }
+      fig_text <- select_text(project_texts, tab = "fig_text", section = "time_comparison")
+      fig_text <- glue::glue(fig_text)
+      HTML(fig_text)
     })
   })
 }
