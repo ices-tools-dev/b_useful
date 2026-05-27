@@ -27,31 +27,26 @@ mod_home_ui <- function(id){
     ),
     card(
       card_header("Welcome to the B-USEFUL Decision Support Tool", class = "bg-primary"),
-      div(
-        style = "column-count: 2; column-gap: 1.5rem; text-align: justify;",
-          style = css(grid_template_columns = "4fr 1fr"),
-          heights_equal = "row",
           uiOutput(ns("welcome"))
-          )),
-    card(height = "40vh", full_screen = FALSE,
+    ),
+    card(height = "75vh", full_screen = FALSE,
       
       layout_column_wrap(width = 1/2,heights_equal = "all",
-        card(min_height = "30vh",
-                  tags$style(type = "text/css", "#map {margin-left: auto; margin-right: auto; margin-bottom: auto;}"),
-                    leafletOutput(ns("map"), width = "100%")
-             ),
-        
-        card(card_body(min_height = "30vh",
-              selectInput(
-                inputId = ns("selected_locations"),
-                label = "",
-                choices = c("Please select a case study region", eco_shape$Ecoregion),
-                selected = NULL,selectize = TRUE,
-                  
-                multiple = FALSE,
-                width = "100%")
-              ))
+        card(min_height = "55vh",
+            leafletOutput(ns("map"), width = "100%"),
+            card_body(height = "90px",
+                      selectizeInput(
+                        inputId = ns("selected_locations"),
+                        label = "",
+                        choices = c("Please select a case study region", eco_shape$Ecoregion),
+                        selected = NULL,options = list(dropdownParent = "body"),
+                        multiple = FALSE,
+                        width = "100%"))
+            ),
+        card(card_body(uiOutput(ns("what")),
+             uiOutput(ns("how")))
         )
+      )
     ),card(
       card_header("Partners", class = "bg-primary"),uiOutput(ns("who"))
       
@@ -109,6 +104,14 @@ mod_home_server <- function(id, parent_session, selected_locations){
     })
     output$welcome <- renderUI({
       text <- paste(select_text(project_texts, "landing_page", "welcome"))
+      HTML(text)
+    })
+    output$what <- renderUI({
+      text <- paste(select_text(project_texts, "landing_page", "what"))
+      HTML(text)
+    })
+    output$how <- renderUI({
+      text <- paste(select_text(project_texts, "landing_page", "how"))
       HTML(text)
     })
     
