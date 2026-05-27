@@ -9,7 +9,7 @@
 #'
 #' @noRd
 app_sys <- function(...) {
-  system.file(..., package = "b_useful")
+  system.file(..., package = "buseful")
 }
 
 

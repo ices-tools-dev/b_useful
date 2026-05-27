@@ -37,10 +37,10 @@ make_biodiversity_img_tag <- function(ecoregion, taxon, metric, result_type, yea
 make_img_tag <- function(filename, ns) {
   
   # Web path used by img tag
-  webpath <- file.path("www/wp3", filename)
+  webpath <- file.path("www", filename)
   
   # Filesystem path used for existence check
-  file_systempath <- app_sys("app/www/wp3", filename)
+  file_systempath <- app_sys("app/www", filename)
   
   validate(
     need(file.exists(file_systempath),
