@@ -31,7 +31,7 @@ app_ui <- function(request) {
     }
   .navbar, .bslib-page-navbar {
     position: relative;
-    z-index: 2000;
+    z-index: 1050;
   }
   ")), 
       position = "static-top",
