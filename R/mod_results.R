@@ -19,7 +19,9 @@ mod_results_ui <- function(id){
       tabPanel("Interactive Comparison",
                mod_wp3_interactive_comparison_ui(ns("wp3_interactive_comparison_1"))),
       tabPanel("Prioritiser",
-               mod_prioritiser_ui(ns("prioritiser_1")))
+               mod_diversity_filters_ui(ns("diversity_filters_1"))),
+      tabPanel("Interactive Tool",
+               mod_interactive_tool_ui(ns("interactive_tool_1")))
     )
   )
 }
@@ -108,7 +110,7 @@ mod_results_server <- function(id, case_study){
                                       trends_data = trends_data, 
                                       taxon = taxon)
     mod_wp3_interactive_comparison_server("wp3_interactive_comparison_1", map_parameters = map_parameters, case_study = case_study, diversity_data = diversity_data(), diversity_spatial = diversity_spatial, taxon=taxon)
-    mod_prioritiser_server("prioritiser_1", map_parameters = map_parameters, case_study = case_study, diversity_data = diversity_data(), taxon=taxon)
-    
+    mod_diversity_filters_server("diversity_filters_1", map_parameters = map_parameters, case_study = case_study, diversity_data = diversity_data(), taxon=taxon)
+    mod_interactive_tool_server("interactive_tool_1", map_parameters = map_parameters, case_study = case_study, diversity_data = diversity_data(), diversity_spatial = diversity_spatial, taxon=taxon)
   })
 }
