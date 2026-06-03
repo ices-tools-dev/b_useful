@@ -11,14 +11,13 @@
 mod_time_series_and_trends_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    card(layout_sidebar(sidebar = sidebar(
+    card(min_height = "70vh", layout_sidebar(sidebar = sidebar(
       radioButtons(ns("content_toggle"), 
                    label = "", 
-                   choiceNames = list(tooltip(span("View Animation", bs_icon("info-circle")), "Displays an animation of the annual development of the selected biodiversity index"),
+                   choiceNames = list(tooltip(span("Biodiversity Development", bs_icon("info-circle")), "Displays an animation of the annual development of the selected biodiversity index and the overall trend through the time series"),
                                       tooltip(span("Explore Time Series", bs_icon("info-circle")), "Enables selection of specific years from the time series to make side-by-side comparison of biodiversity indicators")),
                    choiceValues = c("animation", "time_series"),
                    selected = "animation"),
-      prettySwitch(ns("show_trend"), label = tooltip(span("Show diversity trend", bs_icon("info-circle")), "Toggle this option to display the overall trend across the available time period")),
       radioButtons(
         ns("diversity_idx"),
         label = "Select diversity index",
@@ -56,7 +55,7 @@ mod_time_series_and_trends_server <- function(id, map_parameters, case_study, di
       if(input$content_toggle == "time_series") {
         yr_summary <- summary(diversity_data()$Year)
         selectizeInput(inputId = ns("year_choices"), 
-                       tooltip(span("Select Year(s)", bs_icon("info-circle")), "Select years to compare from the dropdown. Use <em>Backspace</em> or Del to deselect"),
+                       tooltip(span("Select Year(s)", bs_icon("info-circle")), HTML("Select years to compare from the dropdown. Use <em>Backspace</em> or <em>Del</em> to deselect")),
                                      multiple = TRUE,
                                      choices = yr_summary[1]:yr_summary[6],
                                      selected = c(yr_summary[1], yr_summary[3], yr_summary[6]))
@@ -66,32 +65,19 @@ mod_time_series_and_trends_server <- function(id, map_parameters, case_study, di
     output$content <- renderUI({
       req(input$content_toggle)
       req(input$diversity_idx)
-      tagList(
-        if(input$show_trend) {
-          layout_column_wrap(width = "450px", height = 500,
-                             if(input$content_toggle == "animation") {
-                               card(
-                                 mod_diversity_animation_ui(ns("diversity_animation_1"))
-                               )} else if (input$content_toggle == "time_series") {
-                                 card(
-                                   mod_wp3_time_comparison_ui(ns("wp3_time_comparison_1"))
-                                 )   
-                               },
-                             card(
-                               mod_wp3_trends_ui(ns("trends_1"))
-                             )
-          )
-        } else {
           if(input$content_toggle == "animation") {
-            card(
-              mod_diversity_animation_ui(ns("diversity_animation_1"))
-            )} else if (input$content_toggle == "time_series") {
-              card(
-                mod_wp3_time_comparison_ui(ns("wp3_time_comparison_1"))
-              )   
+            tagList(
+              layout_column_wrap(width = "450px",
+              card(withSpinner(mod_diversity_animation_ui(ns("diversity_animation_1")))),
+              card(mod_wp3_trends_ui(ns("trends_1")))),
+              card("Figure Information", 
+                      uiOutput(ns("fig_text_trend")),
+                      height = "20vh")
+            )
+              
+            } else if (input$content_toggle == "time_series") {
+              mod_wp3_time_comparison_ui(ns("wp3_time_comparison_1"))
             }
-        }
-      )
     })
     
   mod_diversity_animation_server("diversity_animation_1", case_study = case_study, diversity_idx = reactive(input$diversity_idx), taxon = taxon)

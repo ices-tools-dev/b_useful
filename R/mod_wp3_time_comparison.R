@@ -14,11 +14,13 @@
 mod_wp3_time_comparison_ui <- function(id) {
   ns <- NS(id)
   tagList(
-      card_body(padding = 0,
-                min_height = "50vh",
-                withSpinner(plotOutput(ns("div_plot"), 
-                           height = "70vh"))),
-      card("Figure Information", uiOutput(ns("fig_text")), height = "20vh")
+      card(padding = 0,
+          min_height = "50vh",
+          withSpinner(plotOutput(ns("div_plot"), 
+                     height = "70vh"))),
+      card("Figure Information", 
+           uiOutput(ns("fig_text")), 
+           height = "20vh")
   )
 }
     

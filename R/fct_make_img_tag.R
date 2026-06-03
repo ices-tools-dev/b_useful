@@ -50,7 +50,15 @@ make_img_tag <- function(filename, ns) {
   tags$img(
     id = ns(filename),
     src = webpath,
-    style = "width: 100%; cursor: pointer;",
+    style = "
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      cursor: pointer;
+    ",
     onclick = "toggleFullScreen(this)"
   )
 }

@@ -11,11 +11,9 @@ mod_diversity_animation_ui <- function(id) {
   ns <- NS(id)
   tagList(
     card_body(padding = 0,
-              min_height = "50vh",
-              withSpinner(uiOutput(outputId = ns("biodiv_animation"))),
-    card("Figure Information", 
-         uiOutput(ns("fig_text_anim")), 
-         height = "20vh"))
+        height = "70vh",
+        style = "overflow: hidden; display: flex; align-items: center; justify-content: center;",
+        uiOutput(outputId = ns("biodiv_animation")))
   )
 }
     
