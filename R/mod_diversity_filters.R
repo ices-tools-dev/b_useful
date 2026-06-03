@@ -16,7 +16,7 @@ mod_diversity_filters_ui <- function(id) {
                           sidebar(uiOutput(ns("year_input")),
                                   radioButtons(
                                               ns("diversity_display"),
-                                              label = "Select diversity index",
+                                              label = tooltip(span("Diversity index to display:", bs_icon("info-circle")), "Note this only impacts the display - biodiversity filters are always applied to their respective layers."),
                                               choiceNames = list(
                                                 tooltip(span("Species Richness", bs_icon("info-circle")), "Number of species present."),
                                                 tooltip(span("Evenness", bs_icon("info-circle")), "How evenly individuals are distributed among species."),

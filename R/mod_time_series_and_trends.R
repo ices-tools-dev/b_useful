@@ -14,17 +14,28 @@ mod_time_series_and_trends_ui <- function(id) {
     card(layout_sidebar(sidebar = sidebar(
       radioButtons(ns("content_toggle"), 
                    label = "", 
-                   choices = c("View Animation" = "animation", "Explore Time Series" = "time_series"),
+                   choiceNames = list(tooltip(span("View Animation", bs_icon("info-circle")), "Displays an animation of the annual development of the selected biodiversity index"),
+                                      tooltip(span("Explore Time Series", bs_icon("info-circle")), "Enables selection of specific years from the time series to make side-by-side comparison of biodiversity indicators")),
+                   choiceValues = c("animation", "time_series"),
                    selected = "animation"),
-      prettySwitch(ns("show_trend"), "Show diversity trend"),
-      radioButtons(ns("diversity_idx"), label = "Select diversity index", 
-                                                       choices = c("Species Richness" = "Richness",
-                                                                   "Evenness" = "evenness",
-                                                                   "Shannon Index" = "shannon",
-                                                                   "Functional Richness" = "fric",
-                                                                   "Functional Evenness" = "feve",
-                                                                   "Functional Dispersion" = "fdis",
-                                                                   "Functional Diversity" = "fdiv")),
+      prettySwitch(ns("show_trend"), label = tooltip(span("Show diversity trend", bs_icon("info-circle")), "Toggle this option to display the overall trend across the available time period")),
+      radioButtons(
+        ns("diversity_idx"),
+        label = "Select diversity index",
+        choiceNames = list(
+          tooltip(span("Species Richness", bs_icon("info-circle")), "Number of species present."),
+          tooltip(span("Evenness", bs_icon("info-circle")), "How evenly individuals are distributed among species."),
+          tooltip(span("Shannon Index", bs_icon("info-circle")), "Entropy-based diversity metric combining richness and evenness."),
+          tooltip(span("Functional Richness", bs_icon("info-circle")), "Volume of occupied functional trait space."),
+          tooltip(span("Functional Evenness", bs_icon("info-circle")), "Evenness of abundance distribution in trait space."),
+          tooltip(span("Functional Dispersion", bs_icon("info-circle")), "Mean distance of species to trait-space centroid."),
+          tooltip(span("Functional Divergence", bs_icon("info-circle")), "Degree to which abundance is distributed toward trait extremes.")
+        ),
+        choiceValues = c(
+          "Richness", "evenness", "shannon",
+          "fric", "feve", "fdis", "fdiv"
+        )
+      ),
       uiOutput(ns("year_selector"))),
       uiOutput(ns("content"))
                       )
@@ -44,10 +55,11 @@ mod_time_series_and_trends_server <- function(id, map_parameters, case_study, di
       req(input$content_toggle)
       if(input$content_toggle == "time_series") {
         yr_summary <- summary(diversity_data()$Year)
-        selectizeInput(inputId = ns("year_choices"), "Select Year(s)",
-                       multiple = TRUE,
-                       choices = yr_summary[1]:yr_summary[6],
-                       selected = c(yr_summary[1], yr_summary[3], yr_summary[6]))
+        selectizeInput(inputId = ns("year_choices"), 
+                       tooltip(span("Select Year(s)", bs_icon("info-circle")), "Select years to compare from the dropdown. Use <em>Backspace</em> or Del to deselect"),
+                                     multiple = TRUE,
+                                     choices = yr_summary[1]:yr_summary[6],
+                                     selected = c(yr_summary[1], yr_summary[3], yr_summary[6]))
       }
     })
     
