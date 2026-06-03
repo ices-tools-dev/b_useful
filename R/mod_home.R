@@ -93,7 +93,7 @@ mod_home_server <- function(id, parent_session, selected_locations){
         "greater_north_sea" = "results_gns",
         "iberia" = "results_iberia",
         "iceland" = "results_iceland",
-        "western_mediterranean" = "results_w_med",
+        "western_mediterranean_sea" = "results_w_med",
         "central-eastern_mediterranean" = "results_ce_med",
         "north_east_atlantic" = "results_nea"
       )
@@ -127,7 +127,6 @@ mod_home_server <- function(id, parent_session, selected_locations){
     })
 
     output$how <- renderUI({
-      browser()
       text <- select_text(project_texts, "landing_page", "how")
       HTML(text)
     })

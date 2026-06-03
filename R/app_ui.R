@@ -61,7 +61,7 @@ app_ui <- function(request) {
                          mod_results_ui("results_gns")),
                 # tabPanel("Iceland", value = "results_iceland",
                 #          mod_results_ui("results_iceland")),
-                tabPanel("Western Mediterranean", value = "results_w_med",
+                tabPanel("Western Mediterranean Sea", value = "results_w_med",
                          mod_results_ui("results_w_med"))#,
                 # tabPanel("Central-Eastern Mediterranean", value = "results_ce_med",
                 #          mod_results_ui("results_ce_med"))
