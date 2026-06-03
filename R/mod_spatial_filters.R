@@ -11,16 +11,16 @@ mod_spatial_filters_ui <- function(id) {
   ns <- NS(id)
   tagList(
     navset_card_tab(
-      nav_panel("Use the drawing tools to select map areas for more detail",
+      nav_panel("Use the drawing tools to select map areas for more detail", 
+                card_body(padding = 0,
          full_screen = T, 
          withSpinner(maplibreOutput(ns("spatial_filters_map")))
-         ),
+         )),
       nav_panel("Provide WKT Geometry",
                 coming_soon(card(
                   textInput("wkt_string", "Accepted WKT Geometries are POLYGON, MULTIPOLYGON and GEOMETRY COLLECTION")
                 )))
-    ),
-    coming_soon(actionButton("combine_filters", "Combine Biodiversity and Spatial Filters"))
+    )
   )
 }
     

@@ -12,6 +12,10 @@ mod_interactive_tool_ui <- function(id) {
   ns <- NS(id)
   tagList(
     accordion(multiple = TRUE, open = TRUE,
+      accordion_panel("Guidance",
+                      card(HTML(select_text(project_texts, tab = "guidance", section = "interactive_tool"))
+                      )
+      ),
       accordion_panel("Biodiversity filters",
                       mod_diversity_filters_ui(ns("diversity_filters_1"))),
       accordion_panel("Spatial filters",

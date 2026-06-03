@@ -10,9 +10,10 @@
 mod_diversity_statistics_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    card(card_header("Summary Statistics"),
-         DTOutput(ns("summary_dt"))),
-    card(DTOutput(outputId = ns("detail_dt")))
+    card(card_header("Summary Statistics"),min_height = "120px",
+         withSpinner(DTOutput(ns("summary_dt")))),
+    card(card_header("Selection Detail"),min_height = "120px",
+         withSpinner((DTOutput(outputId = ns("detail_dt")))))
     #coming_soon(card(card_body("This feature will provide an overview of biodiversity in the area resulting from user-defined filters")))
   )
 }
@@ -25,6 +26,9 @@ mod_diversity_statistics_server <- function(id, diversity_data, selected_spatial
     ns <- session$ns
       
     filtered_data <- reactive({
+      validate(
+        need(sum((selected_diversity() * selected_spatial())) > 0, "No data meets the selection criteria"), 
+        need(sum(selected_spatial()) > 0, "Make a valid selection from the map to view summary statistics"))
       req(diversity_data())
       req(sum(selected_diversity())>0)
       req(sum(selected_spatial())>0)
@@ -37,6 +41,9 @@ mod_diversity_statistics_server <- function(id, diversity_data, selected_spatial
     })
     
     output$summary_dt <- renderDT({
+      # validate(
+      #   need(sum((selected_diversity() * selected_spatial())) <0, "No data meets the provided selection criteria"), 
+      #   need(sum(selected_spatial()) >0, "Make a valid selection from the map to view summary statistics"))
       req(filtered_data())
       
       dat <- filtered_data()
