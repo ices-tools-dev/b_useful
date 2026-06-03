@@ -29,24 +29,28 @@ mod_home_ui <- function(id){
       card_header("Welcome to the B-USEFUL Decision Support Tool", class = "bg-primary"),
           uiOutput(ns("welcome"))
     ),
-    card(height = "75vh", full_screen = FALSE,
-      
-      layout_column_wrap(width = 1/2,heights_equal = "all",
-        card(min_height = "55vh",
-            leafletOutput(ns("map"), width = "100%"),
+    card(card_header("What can I do with this tool?", class = "bg-primary"),
+         card_body(uiOutput(ns("what")))),
+    card(
+       fluidRow(column(6, 
+                       card(min_height = "55vh",
+                            card_body(padding = 0,
+                            leafletOutput(ns("map"),
+                                          width = "100%")),
             card_body(height = "90px",
                       selectizeInput(
                         inputId = ns("selected_locations"),
                         label = "",
-                        choices = c("Please select a case study region", eco_shape$Ecoregion),
-                        selected = NULL,options = list(dropdownParent = "body"),
+                        choices = c("Please select a case study region", c("Greater North Sea", "Western Mediterranean Sea")),
+                        selected = NULL,
+                        options = list(dropdownParent = "body"),
                         multiple = FALSE,
                         width = "100%"))
-            ),
-        card(card_body(uiOutput(ns("what")),
-             uiOutput(ns("how")))
-        )
-      )
+            )),
+            column(6, 
+                  card(card_header("How do I use the tool?", class = "bg-primary"),
+                       card_body(uiOutput(ns("how"))))
+      ))
     ),card(
       card_header("Partners", class = "bg-primary"),uiOutput(ns("who"))
       
@@ -102,25 +106,40 @@ mod_home_server <- function(id, parent_session, selected_locations){
       text <- paste(select_text(project_texts, "landing_page", "stakeholder_modal"))
       HTML(text)
     })
+    
     output$welcome <- renderUI({
       text <- paste(select_text(project_texts, "landing_page", "welcome"))
       HTML(text)
     })
+    
     output$what <- renderUI({
-      text <- paste(select_text(project_texts, "landing_page", "what"))
-      HTML(text)
+      text1 <- paste(select_text(project_texts, "landing_page", "what1"))
+      text2 <- paste(select_text(project_texts, "landing_page", "what2"))
+      div(
+        style = "
+      column-count: 2;
+      column-gap: 1.5rem;
+      text-align: justify;
+    ",
+        HTML(text1),
+        HTML(text2)
+      )
     })
+
     output$how <- renderUI({
-      text <- paste(select_text(project_texts, "landing_page", "how"))
+      browser()
+      text <- select_text(project_texts, "landing_page", "how")
       HTML(text)
     })
     
     output$who <- renderUI({
       HTML(select_text(project_texts, "landing_page", "who"))
     })
+    
     output$funding <- renderUI({
       HTML(select_text(project_texts, "landing_page", "funding"))
     })
+    
     output$ebfm_tool <- renderUI({
       HTML(select_text(project_texts, "landing_page", "lorem"))
     })

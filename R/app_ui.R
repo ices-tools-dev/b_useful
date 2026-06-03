@@ -8,92 +8,66 @@
 #' @noRd
 app_ui <- function(request) {
   tagList(
-    tags$a(name="top"),
-    # Leave this function for adding external resources
-    golem_add_external_resources(),
-    # Your application UI logic
-    navbarPage(
-      theme = bs_theme("lumen", version = 5),
-      # Custom CSS to highlight active tab
+    tags$head(
       tags$style(HTML("
-    /* Active tab */
-    .nav-tabs > li.active > a,
-    .nav-tabs > li.active > a:focus,
-    .nav-tabs > li.active > a:hover {
-      background-color: #007bff; /* Change to your preferred color */
-      color: white !important;
+    .leaflet-container {
+      background: white !important;
     }
-    
-    /* Inactive tabs */
-    .nav-tabs > li > a {
-      background-color: #efeff0;
-      color: #333;
-    }
-  .navbar, .bslib-page-navbar {
-    position: relative;
-    z-index: 1050;
-  }
-  ")), 
-      position = "static-top",
-      collapsible = TRUE,
+  "))
+    ),
+    tags$a(name="top"),
+    golem_add_external_resources(),
+    navbarPage(
+      #  CSS to highlight active tab
+                tags$style(HTML("
+              /* Active tab */
+              .nav-tabs > li.active > a,
+              .nav-tabs > li.active > a:focus,
+              .nav-tabs > li.active > a:hover {
+                background-color: #007bff; /* Change to your preferred color */
+                color: white !important;
+              }
+              
+              /* Inactive tabs */
+              .nav-tabs > li > a {
+                background-color: #efeff0;
+                color: #333;
+              }
+            .navbar, .bslib-page-navbar {
+              position: relative;
+              z-index: 1050;
+            }
+            ")), 
       windowTitle = "B-USEFUL Decision Support Tool",
+      position = "static-top",
       id = "main-navbar",
+      theme = bs_theme("lumen", version = 5),
+      collapsible = TRUE,
       fluid = TRUE,
       title = span(tags$img(src ="www/buseful-logo-RGB.png",
                             style = "padding-right:2px;padding-bottom:10px; padding-top:2px;",
-                            height = "50px"), "B-USEFUL Decision Support Tool"),
+                            height = "50px"), 
+                   "B-USEFUL Decision Support Tool"),
       tabPanel("Home", mod_home_ui("home_1")),
       tabPanel("Background", mod_story_map_ui("story_map_1")),
-      # navbarMenu(title = "About",
-      #            tabPanel("B-USEFUL project",
-      #                   mod_buseful_ui("buseful_1")),
-      #            tabPanel("Themes",
-      #                     mod_themes_ui("themes_1")),
-      #            tabPanel("Case Studies",
-      #                     mod_case_studies_ui("case_studies_1")),
-      #          ),
       navbarMenu("Results",
-                tabPanel("North East Atlantic", value = "results_nea",
-                         mod_results_ui("results_nea")),
-                tabPanel("Baltic Sea", value = "results_baltic",
-                         mod_results_ui("results_baltic")),
-                tabPanel("Barents Sea", value = "results_barents",
-                         mod_results_ui("results_barents")),
-                tabPanel("Bay of Biscay", value = "results_biscay",
-                         mod_results_ui("results_biscay")),
+                # tabPanel("North East Atlantic", value = "results_nea",
+                #          mod_results_ui("results_nea")),
+                # tabPanel("Baltic Sea", value = "results_baltic",
+                #          mod_results_ui("results_baltic")),
+                # tabPanel("Barents Sea", value = "results_barents",
+                #          mod_results_ui("results_barents")),
                 tabPanel("Greater North Sea", value = "results_gns",
                          mod_results_ui("results_gns")),
-                tabPanel("Iberian Coasts", value = "results_iberia",
-                         mod_results_ui("results_iberia")),
-                tabPanel("Iceland", value = "results_iceland",
-                         mod_results_ui("results_iceland")),
+                # tabPanel("Iceland", value = "results_iceland",
+                #          mod_results_ui("results_iceland")),
                 tabPanel("Western Mediterranean", value = "results_w_med",
-                         mod_results_ui("results_w_med")),
-                tabPanel("Central-Eastern Mediterranean", value = "results_ce_med",
-                         mod_results_ui("results_ce_med"))
+                         mod_results_ui("results_w_med"))#,
+                # tabPanel("Central-Eastern Mediterranean", value = "results_ce_med",
+                #          mod_results_ui("results_ce_med"))
                ),
       tabPanel("Resources", mod_resources_ui("resources_1")
       )
-               # # Primary Tab: Biodiversity
-               # mod_biodiversity_ui("biodiversity_1")
-               # ,
-               # # Primary Tab: Human Pressures
-               # navbarMenu("Risk and Vulnerability",
-               #            # Subtabs under Human Pressures
-               #            tabPanel("Species vulnerability",
-               #                     # UI elements
-               #            ),
-               #            tabPanel("Community vulnerability",
-               #                     # UI elements
-               #            ),
-               # ),
-               # navbarMenu("Ecosystem Function and Services"
-               # ),
-               # navbarMenu("Decision Support",
-               #            tabPanel("User input",
-               #                     mod_decision_support_ui("decision_support_1")),
-               #            tabPanel("MPA match-mismatch"),
-               # ),
     )
   )
 }
