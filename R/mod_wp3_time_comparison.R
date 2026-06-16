@@ -18,16 +18,16 @@ mod_wp3_time_comparison_ui <- function(id) {
           min_height = "50vh",
           withSpinner(plotOutput(ns("div_plot"), 
                      height = "70vh"))),
-      card("Figure Information", 
+      card(card_header("Figure Information"), 
            uiOutput(ns("fig_text")), 
-           height = "20vh")
+           min_height = "15vh")
   )
 }
     
 #' wp3_time_comparison Server Functions
 #'
 #' @noRd 
-mod_wp3_time_comparison_server <- function(id, map_parameters, case_study, diversity_data, diversity_idx, selected_years){
+mod_wp3_time_comparison_server <- function(id, map_parameters, case_study, diversity_data, diversity_idx, selected_years, taxon){
   moduleServer(id, function(input, output, session){
     ns <- session$ns
 
@@ -60,15 +60,13 @@ mod_wp3_time_comparison_server <- function(id, map_parameters, case_study, diver
     })
     
     output$fig_text <- renderText({
-      diversity_indicator <- input$diversity_idx
+      diversity_indicator <- diversity_idx()
+      years <- paste(selected_years(), collapse = ", ")
       ecoregion <- str_to_title(str_replace_all(case_study(), pattern = "_", replacement = " "))
-      if(case_study() == "greater_north_sea"){
-        taxon <- "Fish"
-      } else {
-        taxon <- "Demersal"
-      }
+      taxon <- taxon()
+        
       fig_text <- select_text(project_texts, tab = "fig_text", section = "time_comparison")
-      fig_text <- glue::glue(fig_text)
+      fig_text <- glue(fig_text)
       HTML(fig_text)
     })
   })

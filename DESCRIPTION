@@ -1,6 +1,6 @@
 Package: buseful
 Title: B-USEFUL Decision Support Tool
-Version: 0.0.0.9010
+Version: 0.0.0.9011
 Authors@R: 
     person(given = "Neil",
            family = "Maginnis",
@@ -9,11 +9,13 @@ Authors@R:
 Description: Enables biodiversity research outputs from the B-Useful project to be accessed and incorporated by managers into Marine Spatial Planning processes.
 License: CC BY 4.0
 Imports: 
+    bsicons,
     bslib,
     config (>= 0.3.2),
     dplyr,
     DT,
     ggplot2,
+    glue,
     golem (>= 0.4.1),
     htmltools,
     icesUtils,

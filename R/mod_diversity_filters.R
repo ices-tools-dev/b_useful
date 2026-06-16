@@ -27,7 +27,7 @@ mod_diversity_filters_ui <- function(id) {
                                                       "Species Richness percentile",
                                                       bs_icon("info-circle")
                                                     ),
-                                                    "Species Richness is the number of species that are known or predicted to be present in a given area.",
+                                                    HTML(select_text(project_texts, tab = "tooltips", section = "richness")),
                                                     tags$br(),
                                                     "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites with the greatest number of species."
                                                   )),
@@ -38,7 +38,7 @@ mod_diversity_filters_ui <- function(id) {
                                                       "Evenness percentile",
                                                       bs_icon("info-circle")
                                                     ),
-                                                    "Evenness is ",
+                                                    HTML(select_text(project_texts, tab = "tooltips", section = "evenness")),
                                                     tags$br(),
                                                     "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites where the abundance of species is most similar."
                                                   )),
@@ -49,9 +49,7 @@ mod_diversity_filters_ui <- function(id) {
                                                       "Shannon percentile",
                                                       bs_icon("info-circle")
                                                     ),
-                                                    "Shannon is ",
-                                                    tags$br(),
-                                                    "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites where "
+                                                    HTML(select_text(project_texts, tab = "tooltips", section = "shannon"))
                                                   )),
                                       sliderInput(ns("fric_percentile"),
                                                   min = 0, max = 100, ticks = FALSE, value = c(0,100), round = TRUE,
@@ -60,9 +58,7 @@ mod_diversity_filters_ui <- function(id) {
                                                       "Functional Richness percentile",
                                                       bs_icon("info-circle")
                                                     ),
-                                                    "Functional Richness is ",
-                                                    tags$br(),
-                                                    "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites where "
+                                                    HTML(select_text(project_texts, tab = "tooltips", section = "fric"))
                                                   )),
                                       sliderInput(ns("feve_percentile"),
                                                   min = 0, max = 100, ticks = FALSE, value = c(0,100), round = TRUE,
@@ -71,9 +67,7 @@ mod_diversity_filters_ui <- function(id) {
                                                       "Functional Evenness percentile",
                                                       bs_icon("info-circle")
                                                     ),
-                                                    "Functional Evenness ",
-                                                    tags$br(),
-                                                    "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites where "
+                                                    HTML(select_text(project_texts, tab = "tooltips", section = "feve"))
                                                   )),
                                       sliderInput(ns("fdis_percentile"),
                                                   min = 0, max = 100, ticks = FALSE, value = c(0,100), round = TRUE,
@@ -82,9 +76,7 @@ mod_diversity_filters_ui <- function(id) {
                                                       "Functional Dispersion percentile",
                                                       bs_icon("info-circle")
                                                     ),
-                                                    "Functional Dispersion is ",
-                                                    tags$br(),
-                                                    "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites where "
+                                                    HTML(select_text(project_texts, tab = "tooltips", section = "fdis"))
                                                   )),
                                       sliderInput(ns("fdiv_percentile"),
                                                   min = 0, max = 100, ticks = FALSE, value = c(0,100), round = TRUE,
@@ -93,16 +85,14 @@ mod_diversity_filters_ui <- function(id) {
                                                       "Functional Divergence percentile",
                                                       bs_icon("info-circle")
                                                     ),
-                                                    " is ",
-                                                    tags$br(),
-                                                    "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites where "
+                                                    HTML(select_text(project_texts, tab = "tooltips", section = "fdiv"))
                                                   )))
                                   )
                                 )),
       
       card(withSpinner(plotOutput(ns("plot_output"), height = "90vh")),
-                                    card("Figure Information",
-                                         uiOutput(ns("fig_text")), max_height = "150vh")
+           card(card_header("Figure Information"),
+                uiOutput(ns("fig_text")), min_height = "15vh")
            ),
       
       card(card_body(padding = 0,
@@ -135,125 +125,6 @@ mod_diversity_filters_ui <- function(id) {
     )
   )
   )
-    # card(layout_sidebar(sidebar = 
-    #                       sidebar(width = "265px"
-    #                           accordion(
-    #                               accordion_panel(
-    #                                 "Biodiversity", icon = bsicons::bs_icon("sliders"),
-    #                               uiOutput(ns("year_input")),
-    #                               sliderInput(ns("richness_percentile"),
-    #                                           min = 0, max = 100, ticks = FALSE, value = c(0,100), round = TRUE,
-    #                                           label = tooltip(
-    #                                             trigger = list(
-    #                                               "Species Richness percentile",
-    #                                               bs_icon("info-circle")
-    #                                             ),
-    #                                             "Species Richness is the number of species that are known or predicted to be present in a given area.",
-    #                                             tags$br(),
-    #                                             "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites with the greatest number of species."
-    #                                           )),
-    #                               sliderInput(ns("evenness_percentile"),
-    #                                           min = 0, max = 100, ticks = FALSE, value = c(0,100), round = TRUE,
-    #                                           label = tooltip(
-    #                                             trigger = list(
-    #                                               "Evenness percentile",
-    #                                               bs_icon("info-circle")
-    #                                             ),
-    #                                             "Evenness is ",
-    #                                             tags$br(),
-    #                                             "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites where the abundance of species is most similar."
-    #                                           )),
-    #                               sliderInput(ns("shannon_percentile"),
-    #                                           min = 0, max = 100, ticks = FALSE, value = c(0,100), round = TRUE,
-    #                                           label = tooltip(
-    #                                             trigger = list(
-    #                                               "Shannon percentile",
-    #                                               bs_icon("info-circle")
-    #                                             ),
-    #                                             "Shannon is ",
-    #                                             tags$br(),
-    #                                             "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites where "
-    #                                           )),
-    #                               sliderInput(ns("fric_percentile"),
-    #                                           min = 0, max = 100, ticks = FALSE, value = c(0,100), round = TRUE,
-    #                                           label = tooltip(
-    #                                             trigger = list(
-    #                                               "Functional Richness percentile",
-    #                                               bs_icon("info-circle")
-    #                                             ),
-    #                                             "Functional Richness is ",
-    #                                             tags$br(),
-    #                                             "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites where "
-    #                                           )),
-    #                               sliderInput(ns("feve_percentile"),
-    #                                           min = 0, max = 100, ticks = FALSE, value = c(0,100), round = TRUE,
-    #                                           label = tooltip(
-    #                                             trigger = list(
-    #                                               "Functional Evenness percentile",
-    #                                               bs_icon("info-circle")
-    #                                             ),
-    #                                             "Functional Evenness ",
-    #                                             tags$br(),
-    #                                             "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites where "
-    #                                           )),
-    #                               sliderInput(ns("fdis_percentile"),
-    #                                           min = 0, max = 100, ticks = FALSE, value = c(0,100), round = TRUE,
-    #                                           label = tooltip(
-    #                                             trigger = list(
-    #                                               "Functional Dispersion percentile",
-    #                                               bs_icon("info-circle")
-    #                                             ),
-    #                                             "Functional Dispersion is ",
-    #                                             tags$br(),
-    #                                             "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites where "
-    #                                           )),
-    #                               sliderInput(ns("fdiv_percentile"),
-    #                                           min = 0, max = 100, ticks = FALSE, value = c(0,100), round = TRUE,
-    #                                           label = tooltip(
-    #                                             trigger = list(
-    #                                               "Functional Divergence percentile",
-    #                                               bs_icon("info-circle")
-    #                                             ),
-    #                                             " is ",
-    #                                             tags$br(),
-    #                                             "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites where "
-    #                                           )))
-    #                           )
-    #                         ),
-    #                           layout_sidebar(border = FALSE, 
-    #                                          sidebar = sidebar(position = "right",class = "p-0",
-    #                               accordion(
-    #                                 accordion_panel(
-    #                                 "Display", icon = bs_icon("display"),
-    #                               radioButtons(
-    #                                           ns("diversity_display"),
-    #                                           label = tooltip(span("Diversity index to display:", bs_icon("info-circle")), "Note this only impacts the display - biodiversity filters are always applied to their respective layers."),
-    #                                           choiceNames = list(
-    #                                             tooltip(span("Species Richness", bs_icon("info-circle")), "Number of species present."),
-    #                                             tooltip(span("Evenness", bs_icon("info-circle")), "How evenly individuals are distributed among species."),
-    #                                             tooltip(span("Shannon Index", bs_icon("info-circle")), "Entropy-based diversity metric combining richness and evenness."),
-    #                                             tooltip(span("Functional Richness", bs_icon("info-circle")), "Volume of occupied functional trait space."),
-    #                                             tooltip(span("Functional Evenness", bs_icon("info-circle")), "Evenness of abundance distribution in trait space."),
-    #                                             tooltip(span("Functional Dispersion", bs_icon("info-circle")), "Mean distance of species to trait-space centroid."),
-    #                                             tooltip(span("Functional Divergence", bs_icon("info-circle")), "Degree to which abundance is distributed toward trait extremes.")
-    #                                           ),
-    #                                           choiceValues = c(
-    #                                             "Richness", "evenness", "shannon",
-    #                                             "fric", "feve", "fdis", "fdiv"
-    #                                           )
-    #                                         )
-    #                               ),
-    #                               accordion_panel(
-    #                                 "In Development", icon = bs_icon("wrench"),
-    #                               coming_soon(actionButton(ns("make_polygon"), "Convert area to polygon")),
-    #                               coming_soon(actionButton(ns("download_polygon"), "Download user inputs and polygon"))
-    #                               ))),
-    #                     card(withSpinner(plotOutput(ns("plot_output"), height = "90vh")),
-    #                          card("Figure Information", 
-    #                               uiOutput(ns("fig_text")), max_height = "150vh"))
-    #                     )
-    # )
-    # )
 }
     
 #' diversity_filters Server Functions
@@ -329,6 +200,25 @@ mod_diversity_filters_server <- function(id, map_parameters, case_study, diversi
         coord_sf(xlim=c(map_parameters()$coordslim[1], map_parameters()$coordslim[2]), ylim=c(map_parameters()$coordslim[3],map_parameters()$coordslim[4]))+
         ylab("Latitude")+
         xlab("Longitude")
+    })
+    output$fig_text <- renderText({
+      req(input$year_selector)
+      diversity_indicator <- input$diversity_display
+      rich_pct <- paste(c(input$richness_percentile[1], input$richness_percentile[2]), collapse = " - ") 
+      eve_pct <- paste(c(input$evenness_percentile[1], input$evenness_percentile[2]), collapse = " - ") 
+      shannon_pct <- paste(c(input$shannon_percentile[1], input$shannon_percentile[2]), collapse = " - ") 
+      fric_pct <- paste(c(input$fric_percentile[1], input$fric_percentile[2]), collapse = " - ") 
+      feve_pct <- paste(c(input$feve_percentile[1], input$feve_percentile[2]), collapse = " - ") 
+      fdis_pct <- paste(c(input$fdis_percentile[1], input$fdis_percentile[2]), collapse = " - ") 
+      fdiv_pct <- paste(c(input$fdiv_percentile[1], input$fdiv_percentile[2]), collapse = " - ")
+      
+      yr <- input$year_selector
+      ecoregion <- str_to_title(str_replace_all(case_study(), pattern = "_", replacement = " "))
+      taxon <- taxon()
+      
+      fig_text <- select_text(project_texts, tab = "fig_text", section = "diversity_filters")
+      fig_text <- glue(fig_text)
+      HTML(fig_text)
     })
     
     return(list(selected_year = reactive(input$year_selector),

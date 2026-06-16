@@ -8,6 +8,7 @@
 #'
 #' @importFrom shiny NS tagList 
 #' @importFrom shinyWidgets prettySwitch
+#' @importFrom glue glue
 mod_time_series_and_trends_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -49,11 +50,13 @@ mod_time_series_and_trends_server <- function(id, map_parameters, case_study, di
   moduleServer(id, function(input, output, session){
     ns <- session$ns
  
+    year_summary <- reactive(summary(diversity_data()$Year))
+    
     output$year_selector <- renderUI({
       req(diversity_data())
       req(input$content_toggle)
       if(input$content_toggle == "time_series") {
-        yr_summary <- summary(diversity_data()$Year)
+        yr_summary <- year_summary()
         selectizeInput(inputId = ns("year_choices"), 
                        tooltip(span("Select Year(s)", bs_icon("info-circle")), HTML("Select years to compare from the dropdown. Use <em>Backspace</em> or <em>Del</em> to deselect")),
                                      multiple = TRUE,
@@ -70,9 +73,8 @@ mod_time_series_and_trends_server <- function(id, map_parameters, case_study, di
               layout_column_wrap(width = "450px",
               card(withSpinner(mod_diversity_animation_ui(ns("diversity_animation_1")))),
               card(mod_wp3_trends_ui(ns("trends_1")))),
-              card("Figure Information", 
-                      uiOutput(ns("fig_text_trend")),
-                      height = "20vh")
+              card(card_header("Figure Information"), 
+                      uiOutput(ns("fig_text")),min_height = "15vh")
             )
               
             } else if (input$content_toggle == "time_series") {
@@ -81,8 +83,19 @@ mod_time_series_and_trends_server <- function(id, map_parameters, case_study, di
     })
     
   mod_diversity_animation_server("diversity_animation_1", case_study = case_study, diversity_idx = reactive(input$diversity_idx), taxon = taxon)
-  mod_wp3_time_comparison_server("wp3_time_comparison_1", map_parameters = map_parameters, case_study = case_study, diversity_data = diversity_data(), selected_years = reactive(input$year_choices), diversity_idx = reactive(input$diversity_idx))
+  mod_wp3_time_comparison_server("wp3_time_comparison_1", map_parameters = map_parameters, case_study = case_study, diversity_data = diversity_data(), selected_years = reactive(input$year_choices), diversity_idx = reactive(input$diversity_idx), taxon = taxon)
   mod_wp3_trends_server("trends_1", map_parameters = map_parameters, case_study = case_study, trends_data = trends_data, taxon=taxon, diversity_idx = reactive(input$diversity_idx))
+  
+  output$fig_text <- renderText({
+    diversity_indicator <- input$diversity_idx
+    yr_summary <- year_summary()
+    ecoregion <- str_to_title(str_replace_all(case_study(), pattern = "_", replacement = " "))
+    taxon <- taxon()
+    
+    fig_text <- select_text(project_texts, tab = "fig_text", section = "animation_trend")
+    fig_text <- glue(fig_text)
+    HTML(fig_text)
+  })
   
   })
 }

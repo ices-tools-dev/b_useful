@@ -31,34 +31,35 @@ mod_home_ui <- function(id){
     ),
     card(card_header("What can I do with this tool?", class = "bg-primary"),
          card_body(uiOutput(ns("what")))),
-    card(
-       fluidRow(column(6, 
-                       card(min_height = "55vh",
-                            card_body(padding = 0,
-                            leafletOutput(ns("map"),
-                                          width = "100%")),
-            card_body(height = "90px",
-                      selectizeInput(
-                        inputId = ns("selected_locations"),
-                        label = "",
-                        choices = c("Please select a case study region", c("Greater North Sea", "Western Mediterranean Sea")),
-                        selected = NULL,
-                        options = list(dropdownParent = "body"),
-                        multiple = FALSE,
-                        width = "100%"))
+   fluidRow(column(6, 
+                  card(min_height = "55vh",
+                      card_body(padding = 0,
+                      leafletOutput(ns("map"),
+                                    width = "100%")),
+                      card_body(height = "90px",
+                                selectizeInput(
+                                  inputId = ns("selected_locations"),
+                                  label = "",
+                                  choices = c("Please select a case study region", c("Greater North Sea", "Western Mediterranean Sea")),
+                                  selected = NULL,
+                                  options = list(dropdownParent = "body"),
+                                  multiple = FALSE,
+                                  width = "100%"))
             )),
             column(6, 
                   card(card_header("How do I use the tool?", class = "bg-primary"),
                        card_body(uiOutput(ns("how"))))
-      ))
-    ),card(
-      card_header("Partners", class = "bg-primary"),uiOutput(ns("who"))
+                  )
+    ),
+   card(
+      card_header("Partners", class = "bg-primary"),
+      uiOutput(ns("who"))
       
     ),
-      card(
-        card_header("Funded by the European Union", class = "bg-primary"),uiOutput(ns("funding")),
-                  card_image(file = NULL, src = "img/normal-reproduction-high-resolution.jpg",
-                             height = "50px", width = "75px", border_radius = "all", container = card_body)
+    card(card_header("Funded by the European Union", class = "bg-primary"),
+         uiOutput(ns("funding")),
+         card_image(file = NULL, src = "img/normal-reproduction-high-resolution.jpg",
+                         height = "50px", width = "75px", border_radius = "all", container = card_body)
     ),
   )
 }

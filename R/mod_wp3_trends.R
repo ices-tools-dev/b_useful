@@ -12,12 +12,12 @@
 #' @importFrom shinycssloaders withSpinner
 mod_wp3_trends_ui <- function(id) {
   ns <- NS(id)
-  tagList(card_body(padding = 20, 
+  tagList(
+    card_body(padding = 20,
                     min_height = "50vh",
-                    withSpinner(plotOutput(outputId = ns("biodiv_trends"))),
-                    card("Figure Information", 
-                         uiOutput(ns("fig_text_trend")),
-                         height = "20vh"))
+                    withSpinner(plotOutput(outputId = ns("biodiv_trends"),
+                                           height = "65vh"))
+  )
   )
 }
     
