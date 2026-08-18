@@ -9,6 +9,7 @@
 #' @importFrom shiny NS tagList 
 #' @importFrom bslib tooltip layout_columns
 #' @importFrom bsicons bs_icon
+#' @importFrom dplyr percent_rank
 mod_diversity_filters_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -29,7 +30,7 @@ mod_diversity_filters_ui <- function(id) {
                                                     ),
                                                     HTML(select_text(project_texts, tab = "tooltips", section = "richness")),
                                                     tags$br(),
-                                                    "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites with the greatest number of species."
+                                                    "Setting the sliders to e.g. 70 and 100 would keep only the 30% of sites with the greadat number of species."
                                                   )),
                                       sliderInput(ns("evenness_percentile"),
                                                   min = 0, max = 100, ticks = FALSE, value = c(0,100), round = TRUE,
@@ -147,42 +148,34 @@ mod_diversity_filters_server <- function(id, map_parameters, case_study, diversi
       req(diversity_data())
       req(input$richness_percentile)
       
-      test <- mutate(diversity_data(), 
-                     richness_percentile = dplyr::percent_rank(Richness),
-                     evenness_percentile = dplyr::percent_rank(evenness),
-                     shannon_percentile = dplyr::percent_rank(shannon),
-                     fric_percentile = dplyr::percent_rank(fric),
-                     feve_percentile = dplyr::percent_rank(feve),
-                     fdis_percentile = dplyr::percent_rank(fdis),
-                     fdiv_percentile = dplyr::percent_rank(fdiv),
+      dat <- mutate(diversity_data(), 
+                     richness_percentile = percent_rank(Richness),
+                     evenness_percentile = percent_rank(evenness),
+                     shannon_percentile = percent_rank(shannon),
+                     fric_percentile = percent_rank(fric),
+                     feve_percentile = percent_rank(feve),
+                     fdis_percentile = percent_rank(fdis),
+                     fdiv_percentile = percent_rank(fdiv),
                      )
       
       selected_points(
-        (test$richness_percentile > input$richness_percentile[1]/100) & 
-          (test$richness_percentile < input$richness_percentile[2]/100) &
-          (test$evenness_percentile > input$evenness_percentile[1]/100) & 
-          (test$evenness_percentile < input$evenness_percentile[2]/100) &
-          (test$shannon_percentile > input$shannon_percentile[1]/100) & 
-          (test$shannon_percentile < input$shannon_percentile[2]/100) &
-          (test$fric_percentile > input$fric_percentile[1]/100) & 
-          (test$fric_percentile < input$fric_percentile[2]/100) &
-          (test$feve_percentile > input$feve_percentile[1]/100) & 
-          (test$feve_percentile < input$feve_percentile[2]/100) &
-          (test$fdis_percentile > input$fdis_percentile[1]/100) & 
-          (test$fdis_percentile < input$fdis_percentile[2]/100) &
-          (test$fdiv_percentile > input$fdiv_percentile[1]/100) & 
-          (test$fdiv_percentile < input$fdiv_percentile[2]/100)
+        (dat$richness_percentile > input$richness_percentile[1]/100) & 
+          (dat$richness_percentile < input$richness_percentile[2]/100) &
+          (dat$evenness_percentile > input$evenness_percentile[1]/100) & 
+          (dat$evenness_percentile < input$evenness_percentile[2]/100) &
+          (dat$shannon_percentile > input$shannon_percentile[1]/100) & 
+          (dat$shannon_percentile < input$shannon_percentile[2]/100) &
+          (dat$fric_percentile > input$fric_percentile[1]/100) & 
+          (dat$fric_percentile < input$fric_percentile[2]/100) &
+          (dat$feve_percentile > input$feve_percentile[1]/100) & 
+          (dat$feve_percentile < input$feve_percentile[2]/100) &
+          (dat$fdis_percentile > input$fdis_percentile[1]/100) & 
+          (dat$fdis_percentile < input$fdis_percentile[2]/100) &
+          (dat$fdiv_percentile > input$fdiv_percentile[1]/100) & 
+          (dat$fdiv_percentile < input$fdiv_percentile[2]/100)
       )
-      # test %>% filter(
-      #   (richness_percentile > input$richness_percentile[1]/100) & (richness_percentile < input$richness_percentile[2]/100),
-      #   (evenness_percentile > input$evenness_percentile[1]/100) & (evenness_percentile < input$evenness_percentile[2]/100),
-      #   (shannon_percentile > input$shannon_percentile[1]/100) & (shannon_percentile < input$shannon_percentile[2]/100),
-      #   (fric_percentile > input$fric_percentile[1]/100) & (fric_percentile < input$fric_percentile[2]/100),
-      #   (feve_percentile > input$feve_percentile[1]/100) & (feve_percentile < input$feve_percentile[2]/100),
-      #   (fdis_percentile > input$fdis_percentile[1]/100) & (fdis_percentile < input$fdis_percentile[2]/100),
-      #   (fdiv_percentile > input$fdiv_percentile[1]/100) & (fdiv_percentile < input$fdiv_percentile[2]/100),
-      #   )
-      test %>% filter(selected_points())
+
+      dat %>% filter(selected_points())
     })
     
     
