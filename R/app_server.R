@@ -23,7 +23,7 @@ app_server <- function(input, output, session) {
                             "results_gns" = "greater_north_sea",
                             "results_iceland" = "iceland",
                             "results_w_med" = "western_mediterranean_sea",
-                            "results_ce_med" = "central-eastern_mediterranean",
+                            "results_ce_med" = "central-eastern_mediterranean_sea",
                             "results_nea" = "north_east_atlantic",
                             "Home"
       )
@@ -42,7 +42,7 @@ app_server <- function(input, output, session) {
            "greater_north_sea" = mod_results_server("results_gns", case_study = selected_locations),
            "iceland" = mod_results_server("results_iceland", case_study = selected_locations),
            "western_mediterranean_sea" = mod_results_server("results_w_med", case_study = selected_locations),
-           "central-eastern_mediterranean" = mod_results_server("results_ce_med", case_study = selected_locations),
+           "central-eastern_mediterranean_sea" = mod_results_server("results_ce_med", case_study = selected_locations),
            "north_east_atlantic" = mod_results_server("results_nea", case_study = selected_locations)
     )
   })

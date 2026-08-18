@@ -51,8 +51,8 @@ app_ui <- function(request) {
       tabPanel("Home", mod_home_ui("home_1")),
       tabPanel("Background", mod_story_map_ui("story_map_1")),
       navbarMenu("Results",
-                # tabPanel("North East Atlantic", value = "results_nea",
-                #          mod_results_ui("results_nea")),
+                tabPanel("North East Atlantic", value = "results_nea",
+                         mod_results_ui("results_nea")),
                 # tabPanel("Baltic Sea", value = "results_baltic",
                 #          mod_results_ui("results_baltic")),
                 # tabPanel("Barents Sea", value = "results_barents",
@@ -62,9 +62,9 @@ app_ui <- function(request) {
                 # tabPanel("Iceland", value = "results_iceland",
                 #          mod_results_ui("results_iceland")),
                 tabPanel("Western Mediterranean Sea", value = "results_w_med",
-                         mod_results_ui("results_w_med"))#,
-                # tabPanel("Central-Eastern Mediterranean", value = "results_ce_med",
-                #          mod_results_ui("results_ce_med"))
+                         mod_results_ui("results_w_med")),
+                tabPanel("Central-Eastern Mediterranean Sea", value = "results_ce_med",
+                         mod_results_ui("results_ce_med"))
                ),
       tabPanel("Resources", mod_resources_ui("resources_1")
       )

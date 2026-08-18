@@ -40,7 +40,7 @@ mod_home_ui <- function(id){
                                 selectizeInput(
                                   inputId = ns("selected_locations"),
                                   label = "",
-                                  choices = c("Please select a case study region", c("Greater North Sea", "Western Mediterranean Sea")),
+                                  choices = c("Please select a case study region", c("Greater North Sea", "Western Mediterranean Sea", "Central-Eastern Mediterranean Sea", "North East Atlantic")),
                                   selected = NULL,
                                   options = list(dropdownParent = "body"),
                                   multiple = FALSE,
@@ -85,7 +85,7 @@ mod_home_server <- function(id, parent_session, selected_locations){
       temp_location <- str_replace_all(temp_location, " ", "_")
       temp_location <- tolower(temp_location)
       selected_locations(temp_location)
-      
+
       tab_to_show <- switch(
         selected_locations(),
         "baltic_sea" = "results_baltic",
@@ -95,7 +95,7 @@ mod_home_server <- function(id, parent_session, selected_locations){
         "iberia" = "results_iberia",
         "iceland" = "results_iceland",
         "western_mediterranean_sea" = "results_w_med",
-        "central-eastern_mediterranean" = "results_ce_med",
+        "central-eastern_mediterranean_sea" = "results_ce_med",
         "north_east_atlantic" = "results_nea"
       )
       

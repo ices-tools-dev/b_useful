@@ -34,7 +34,9 @@ mod_spatial_filters_server <- function(id, map_parameters, case_study, diversity
     grid_low_res <- reactive({
       switch(case_study(),
              "greater_north_sea" = readRDS("data/gns_grid_low_res.rds"), 
-             "western_mediterranean_sea" = readRDS("data/wmed_grid_low_res.rds"))
+             "western_mediterranean_sea" = readRDS("data/wmed_grid_low_res.rds"),
+             "central-eastern_mediterranean_sea" = readRDS("data/emed_grid_low_res.rds"),
+             "north_east_atlantic" = readRDS("data/nea_grid_low_res.rds"))
     })
     
     selected_points <- reactiveVal(rep(FALSE, nrow(diversity_data())))

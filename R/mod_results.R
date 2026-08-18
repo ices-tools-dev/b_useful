@@ -36,9 +36,9 @@ mod_results_server <- function(id, case_study){
              "bay_of_biscay" = "Bay of Biscary", 
              "greater_north_sea" = "Greater North Sea", 
              "iceland" = "Iceland", 
-             "ne_atlantic" = "North East Atlantic", 
+             "north_east_atlantic" = "North East Atlantic", 
              "western_mediterranean_sea" = "Western Mediterranean Sea",
-             "c_mediterranean" = "Central Mediterranean")
+             "central-eastern_mediterranean_sea" = "Central-Eastern Mediterranean Sea")
     })
     output$region_title <- renderText(display_region())
     
@@ -47,24 +47,27 @@ mod_results_server <- function(id, case_study){
       req(!is.null(case_study))
       switch(case_study(),
              "greater_north_sea" = readRDS("data/gns_fish_diversity.rds"), 
-             "eastern_mediterranean" = readRDS("data/.rds"),
-             "western_mediterranean_sea" = readRDS("data/wmed_demersal_diversity.rds"))
+             "central-eastern_mediterranean_sea" = readRDS("data/emed_demersal_diversity.rds"),
+             "western_mediterranean_sea" = readRDS("data/wmed_demersal_diversity.rds"),
+             "north_east_atlantic" = readRDS("data/nea_fish_diversity.rds"))
     })
     
     diversity_spatial <- reactive({
       req(!is.null(case_study))
       switch(case_study(),
              "greater_north_sea" = readRDS("data/gns_fish_div_spatial.rds"), 
-             "eastern_mediterranean" = readRDS("data/.rds"),
-             "western_mediterranean_sea" = readRDS("data/wmed_demersal_div_spatial.rds"))
+             "central-eastern_mediterranean_sea" = readRDS("data/emed_demersal_div_spatial.rds"),
+             "western_mediterranean_sea" = readRDS("data/wmed_demersal_div_spatial.rds"),
+             "north_east_atlantic" = readRDS("data/nea_fish_div_spatial.rds"))
     })
     
     trends_data <- reactive({
       req(!is.null(case_study))
       switch(case_study(),
              "greater_north_sea" = readRDS("data/gns_fish_diversity_trends.rds"), 
-             "west_med" = readRDS("data.rds"),
-             "western_mediterranean_sea" = readRDS("data/wmed_demersal_diversity_trends.rds"))
+             "central-eastern_mediterranean_sea" = readRDS("data/emed_demersal_diversity_trends.rds"),
+             "western_mediterranean_sea" = readRDS("data/wmed_demersal_diversity_trends.rds"),
+             "north_east_atlantic" = readRDS("data/nea_fish_diversity_trends.rds"))
     })
     
     map_parameters <- reactive({
@@ -92,9 +95,9 @@ mod_results_server <- function(id, case_study){
     
     taxon <- reactive({
       req(case_study())
-      if(case_study() == "greater_north_sea"){
+      if(case_study() %in% c("greater_north_sea", "north_east_atlantic")){
         taxon <- "fish"
-      } else if(case_study() == "western_mediterranean_sea"){
+      } else if(case_study() %in% c("central-eastern_mediterranean_sea", "western_mediterranean_sea")){
         taxon <- "demersal"  
       }
     })
