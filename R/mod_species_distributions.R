@@ -28,12 +28,9 @@ mod_species_distributions_ui <- function(id) {
           )
         ),
         
-        # Future location for model type selector:
-        #
-        # uiOutput(ns("model_type_selector")),
-        
         uiOutput(ns("species_selector")),
         
+        uiOutput(ns("model_type_selector")),
         uiOutput(ns("year_selector"))
       )
       ,
@@ -104,7 +101,9 @@ mod_species_distributions_server <- function(
     # can simply return input$model_type instead.
     #
     selected_model_type <- reactive({
-      "occurrence"
+
+      req(!is.null(input$model_input))
+      input$model_input
     })
     
     
@@ -126,7 +125,12 @@ mod_species_distributions_server <- function(
           pa_data()
         },
         
-        "biomass_abundance" = {
+        "biomass" = {
+          req(biomass_abundance_data())
+          biomass_abundance_data()
+        },
+        
+        "abundance" = {
           req(biomass_abundance_data())
           biomass_abundance_data()
         },
@@ -182,6 +186,29 @@ mod_species_distributions_server <- function(
       )
     })
     
+    #============================================================
+    # Model selector
+    #============================================================
+    
+    output$model_type_selector <- renderUI({
+      
+      req(case_study)
+      
+      if (case_study() %in% c("western_mediterranean_sea", "central-eastern_mediterranean_sea")) {
+        choices <- c("Occurrence" = "occurrence", "Abundance" = "abundance")
+      } else if (case_study() == "north_east_atlantic") {
+        choices <- c("Occurrence" = "occurrence")
+      } else {
+        choices <- c("Occurrence" = "occurrence", "Biomass" = "biomass")
+      } 
+      
+      selectInput(
+        ns("model_input"),
+        label = "Select Model Type",
+        choices = choices
+      )
+    })
+    
     
     #============================================================
     # Year selector
@@ -218,9 +245,8 @@ mod_species_distributions_server <- function(
       req(input$year_input)
       
       current_model_data() |>
-        
         dplyr::select(
-          dplyr::all_of(required_columns),
+          dplyr::any_of(required_columns),
           dplyr::all_of(input$species_input)
         ) |>
         
@@ -236,7 +262,9 @@ mod_species_distributions_server <- function(
     
     diagnostics_data <- reactive({
       req(input$species_input)
-      req(selected_model_type())
+      req(input$model_input)
+      req(model_diagnostics())
+      # req(selected_model_type())
 
       dat <- model_diagnostics()
       
@@ -271,6 +299,7 @@ mod_species_distributions_server <- function(
     #============================================================
     
     output$diagnostics_title <- renderUI({
+      req(selected_model_type())
       
       title <- switch(
         

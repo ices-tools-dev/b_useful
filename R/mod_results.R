@@ -78,7 +78,7 @@ mod_results_server <- function(id, case_study){
              "greater_north_sea" = readRDS("data/gns_species_p_occurrence.rds"), 
              "central-eastern_mediterranean_sea" = readRDS("data/emed_species_p_occurrence.rds"),
              "western_mediterranean_sea" = readRDS("data/wmed_species_p_occurrence.rds"),
-             "north_east_atlantic" = readRDS("data/nea_species_p_occurrence.rds"))
+             "north_east_atlantic" = readRDS("data/nea_fish_p_occurrence.rds"))
     })
     
     biomass_abundance_data <- reactive({
@@ -86,8 +86,8 @@ mod_results_server <- function(id, case_study){
       switch(case_study(),
              "greater_north_sea" = readRDS("data/gns_species_abundance.rds"), 
              "central-eastern_mediterranean_sea" = readRDS("data/emed_species_abundance.rds"),
-             "western_mediterranean_sea" = readRDS("data/wmed_species_abundance.rds"),
-             "north_east_atlantic" = readRDS("data/nea_species_abundance.rds"))
+             "western_mediterranean_sea" = readRDS("data/wmed_species_biomass.rds"),
+             "north_east_atlantic" = NULL)
     })
     
     model_diagnostics <- reactive({
@@ -95,8 +95,8 @@ mod_results_server <- function(id, case_study){
       switch(case_study(),
              "greater_north_sea" = readRDS("data/_diagnostics.rds"), 
              "central-eastern_mediterranean_sea" = readRDS("data/emed_demersal_diagnostics.rds"),
-             "western_mediterranean_sea" = readRDS("data/_diagnostics.rds"),
-             "north_east_atlantic" = readRDS("data/_diagnostics.rds"))
+             "western_mediterranean_sea" = readRDS("data/wmed_demersal_diagnostics.rds"),
+             "north_east_atlantic" = readRDS("data/nea_fish_diagnostics.rds"))
     })
     
     map_parameters <- reactive({
