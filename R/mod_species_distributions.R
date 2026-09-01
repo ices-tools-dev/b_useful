@@ -14,7 +14,8 @@ mod_species_distributions_ui <- function(id) {
   ns <- NS(id)
   
   tagList(
-    
+    card(
+      
     layout_columns(
       col_widths = c(3, 6, 3),
         
@@ -62,6 +63,7 @@ mod_species_distributions_ui <- function(id) {
       card(
         "Figure Text"
       )
+    )
   )
 }
 
