@@ -31,7 +31,9 @@ mod_species_distributions_ui <- function(id) {
         uiOutput(ns("species_selector")),
         
         uiOutput(ns("model_type_selector")),
-        uiOutput(ns("year_selector"))
+        uiOutput(ns("year_selector")),
+        uiOutput(ns("focus_selector"))
+        
       )
       ,
       
@@ -231,6 +233,24 @@ mod_species_distributions_server <- function(
         label = "Select Year",
         choices = available_years,
         selected = default_year
+      )
+    })
+    
+    #============================================================
+    # Focus View selector
+    #============================================================
+    
+    output$focus_selector <- renderUI({
+      
+      req(case_study() == "north_east_atlantic")
+      
+      available_views <- unique(current_model_data()$Ecoregion)
+ 
+      selectizeInput(
+        ns("focus_input"),
+        label = "",
+        choices = c("Select Ecoregion for focus view", available_views),
+        selected = NULL
       )
     })
     
