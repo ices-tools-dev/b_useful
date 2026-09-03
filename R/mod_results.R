@@ -17,9 +17,11 @@ mod_results_ui <- function(id){
       tabPanel("Biodiversity development",
                mod_time_series_and_trends_ui(ns("time_series_and_trends_1"))),
      tabPanel("Interactive Tool",
-               mod_interactive_tool_ui(ns("interactive_tool_1")))
+               mod_interactive_tool_ui(ns("interactive_tool_1"))),
+     tabPanel("Species Distributions",
+               mod_species_distributions_ui(ns("species_distributions_1")))
+              )
     )
-  )
 }
     
 #' results Server Functions
@@ -70,6 +72,33 @@ mod_results_server <- function(id, case_study){
              "north_east_atlantic" = readRDS("data/nea_fish_diversity_trends.rds"))
     })
     
+    pa_data <- reactive({
+      req(!is.null(case_study))
+      switch(case_study(),
+             "greater_north_sea" = readRDS("data/gns_species_p_occurrence.rds"), 
+             "central-eastern_mediterranean_sea" = readRDS("data/emed_species_p_occurrence.rds"),
+             "western_mediterranean_sea" = readRDS("data/wmed_species_p_occurrence.rds"),
+             "north_east_atlantic" = readRDS("data/nea_fish_p_occurrence.rds"))
+    })
+    
+    biomass_abundance_data <- reactive({
+      req(!is.null(case_study))
+      switch(case_study(),
+             "greater_north_sea" = readRDS("data/gns_species_abundance.rds"), 
+             "central-eastern_mediterranean_sea" = readRDS("data/emed_species_abundance.rds"),
+             "western_mediterranean_sea" = readRDS("data/wmed_species_biomass.rds"),
+             "north_east_atlantic" = NULL)
+    })
+    
+    model_diagnostics <- reactive({
+      req(!is.null(case_study))
+      switch(case_study(),
+             "greater_north_sea" = readRDS("data/_diagnostics.rds"), 
+             "central-eastern_mediterranean_sea" = readRDS("data/emed_demersal_diagnostics.rds"),
+             "western_mediterranean_sea" = readRDS("data/wmed_demersal_diagnostics.rds"),
+             "north_east_atlantic" = readRDS("data/nea_fish_diagnostics.rds"))
+    })
+    
     map_parameters <- reactive({
       req(diversity_data())
       dat <- diversity_data()
@@ -111,5 +140,6 @@ mod_results_server <- function(id, case_study){
     
     mod_diversity_filters_server("diversity_filters_1", map_parameters = map_parameters, case_study = case_study, diversity_data = diversity_data, taxon=taxon)
     mod_interactive_tool_server("interactive_tool_1", map_parameters = map_parameters, case_study = case_study, diversity_data = diversity_data, diversity_spatial = diversity_spatial, taxon=taxon)
+    mod_species_distributions_server("species_distributions_1", map_parameters = map_parameters, case_study = case_study, pa_data = pa_data, biomass_abundance_data = biomass_abundance_data, model_diagnostics = model_diagnostics)
   })
 }
