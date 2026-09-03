@@ -33,29 +33,26 @@ mod_species_distributions_ui <- function(id) {
         
         uiOutput(ns("model_type_selector")),
         uiOutput(ns("year_selector")),
-        uiOutput(ns("focus_selector"))
-        
-      )
-      ,
+      ),
       
       #---------------------------
       # Main map
       #---------------------------
-      card(
-        plotOutput(ns("map"))
-      ),
+      uiOutput(ns("main_panel")),
       
       #---------------------------
-      # Diagnostics
+      # Right Column
       #---------------------------
-      card(
-        card_header(
-          uiOutput(ns("diagnostics_title"))
-        ),
-        
-        uiOutput(ns("diagnostics_panel"))
-      )
-      
+      uiOutput(ns("right_panel")),
+      # 
+      # card(
+      #   card_header(
+      #     uiOutput(ns("diagnostics_title"))
+      #   ),
+      #   
+      #   uiOutput(ns("diagnostics_panel"))
+      # )
+      # 
       #---------------------------
       # Figure text
       #---------------------------
@@ -159,7 +156,7 @@ mod_species_distributions_server <- function(
       
       cols <- colnames(dat)
       
-      cols[!cols %in% required_columns]
+      cols[!cols %in% c(required_columns, "ecoregion")]
     })
     
     
@@ -245,14 +242,13 @@ mod_species_distributions_server <- function(
     output$focus_selector <- renderUI({
       
       req(case_study() == "north_east_atlantic")
-      
-      available_views <- unique(current_model_data()$Ecoregion)
- 
+      req(!is.null(current_model_data()))
+
+      available_views <- unique(current_model_data()$ecoregion)
       selectizeInput(
         ns("focus_input"),
-        label = "",
-        choices = c("Select Ecoregion for focus view", available_views),
-        selected = NULL
+        label = "Select Ecoregion for focus view",
+        choices = sort(available_views), 
       )
     })
     
@@ -720,5 +716,78 @@ mod_species_distributions_server <- function(
         xlab("Longitude")
     })
     
+    output$sdm_focus <- renderUI({
+      req(case_study()== "north_east_atlantic")
+
+      req(!is.null(input$focus_input))
+      req(!is.null(input$species_input))
+      req(!is.null(input$year_input))
+      
+      eco_acronym <- region_codes[names(region_codes) == case_study()]
+      spec <- str_replace_all(input$species_input, pattern = " ", replacement = "_")
+      file_name <- paste0(paste(eco_acronym, input$focus_input, spec, input$year_input, sep = "_"), ".png")
+      
+      make_img_tag(filename = file_name,
+                   ns = ns)
+    }) #%>% bindCache(input$focus_input, input$species_input, input$year_input)
+    
+    output$sdm_broad <- renderUI({
+      req(case_study()== "north_east_atlantic")
+
+      req(!is.null(input$species_input))
+      req(!is.null(input$year_input))
+      
+      eco_acronym <- region_codes[names(region_codes) == case_study()]
+      spec <- str_replace_all(input$species_input, pattern = " ", replacement = "_")
+      file_name <- paste0(paste(eco_acronym, spec, input$year_input, sep = "_"), ".png")
+      
+      make_img_tag(filename = file_name,
+                   ns = ns)
+    }) #%>% bindCache(input$focus_input, input$species_input, input$year_input)
+    
+    output$main_panel <- renderUI({
+      if(case_study() == "north_east_atlantic"){
+        card(
+          card_header(uiOutput(ns("focus_selector"))),
+          uiOutput(outputId = ns("sdm_focus")),
+          height = "70vh"
+        )
+      } else {
+        card(
+          plotOutput(ns("map")),
+          height = "70vh"
+        )
+      }
+    })
+    
+    output$right_panel <- renderUI({
+      if(case_study() == "north_east_atlantic"){
+        tagList(
+          card(
+            card(
+              uiOutput(ns("sdm_broad"))
+            ),
+            
+            card(
+              card_header(
+                uiOutput(ns("diagnostics_title"))
+              ),
+              uiOutput(ns("diagnostics_panel"))
+            ), 
+            height = "70vh"
+          )
+        )
+      } else {
+        tagList(
+          card(
+            card_header(
+              uiOutput(ns("diagnostics_title"))
+            ),
+            
+            uiOutput(ns("diagnostics_panel"))
+          )
+        )
+      }
+    })
   })
 }
