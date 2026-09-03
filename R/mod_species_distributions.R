@@ -20,19 +20,21 @@ mod_species_distributions_ui <- function(id) {
       col_widths = c(3, 6, 3),
         
       card(
-        radioButtons(
-          ns("name_form"),
-          label = "Select from species Latin binomial name or common name",
-          choices = c(
-            "Latin" = "latin",
-            "Common name" = "common"
-          )
-        ),
+        # radioButtons(
+        #   ns("name_form"),
+        #   label = "Select from species Latin binomial name or common name",
+        #   choices = c(
+        #     "Latin" = "latin",
+        #     "Common name" = "common"
+        #   )
+        # ),
         
         uiOutput(ns("species_selector")),
         
         uiOutput(ns("model_type_selector")),
         uiOutput(ns("year_selector")),
+        uiOutput(ns("focus_selector"))
+        
       ),
       
       #---------------------------
@@ -113,7 +115,7 @@ mod_species_distributions_server <- function(
     #============================================================
     
     current_model_data <- reactive({
-      
+      req(case_study() != "north_east_atlantic")
       req(case_study)
       req(selected_model_type())
       
@@ -152,11 +154,17 @@ mod_species_distributions_server <- function(
     
     species <- reactive({
       
+      if (case_study() == "north_east_atlantic"){
+        available_species[["north_east_atlantic"]]
+        
+      } else {
+        
       dat <- current_model_data()
       
       cols <- colnames(dat)
       
       cols[!cols %in% c(required_columns, "ecoregion")]
+      }
     })
     
     
@@ -166,9 +174,15 @@ mod_species_distributions_server <- function(
     
     years <- reactive({
       
+      if (case_study() == "north_east_atlantic"){
+        available_years[["north_east_atlantic"]]
+        
+      } else {
+        
       dat <- current_model_data()
       
       sort(unique(dat$Year))
+      }
     })
     
     
@@ -242,9 +256,8 @@ mod_species_distributions_server <- function(
     output$focus_selector <- renderUI({
       
       req(case_study() == "north_east_atlantic")
-      req(!is.null(current_model_data()))
 
-      available_views <- unique(current_model_data()$ecoregion)
+      available_views <- available_regions[["north_east_atlantic"]]
       selectizeInput(
         ns("focus_input"),
         label = "Select Ecoregion for focus view",
@@ -747,9 +760,7 @@ mod_species_distributions_server <- function(
     
     output$main_panel <- renderUI({
       if(case_study() == "north_east_atlantic"){
-        card(
-          card_header(uiOutput(ns("focus_selector"))),
-          uiOutput(outputId = ns("sdm_focus")),
+        card(uiOutput(outputId = ns("sdm_focus")),
           height = "70vh"
         )
       } else {

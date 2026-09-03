@@ -50,7 +50,7 @@ app_ui <- function(request) {
                    "B-USEFUL Decision Support Tool"),
       tabPanel("Home", mod_home_ui("home_1")),
       tabPanel("Background", mod_story_map_ui("story_map_1")),
-      navbarMenu("Results",
+      navbarMenu("Model Outputs",
                 tabPanel("North East Atlantic", value = "results_nea",
                          mod_results_ui("results_nea")),
                 # tabPanel("Baltic Sea", value = "results_baltic",

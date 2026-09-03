@@ -14,12 +14,12 @@ mod_results_ui <- function(id){
                     titlePanel(title = textOutput(ns("region_title")))),
              column(width = 3)),
     tabsetPanel(
-      tabPanel("Biodiversity development",
-               mod_time_series_and_trends_ui(ns("time_series_and_trends_1"))),
-     tabPanel("Interactive Tool",
-               mod_interactive_tool_ui(ns("interactive_tool_1"))),
      tabPanel("Species Distributions",
-               mod_species_distributions_ui(ns("species_distributions_1")))
+               mod_species_distributions_ui(ns("species_distributions_1"))),
+    tabPanel("Biodiversity development",
+               mod_time_series_and_trends_ui(ns("time_series_and_trends_1"))),
+    tabPanel("Interactive Tool",
+               mod_interactive_tool_ui(ns("interactive_tool_1"))),
               )
     )
 }
