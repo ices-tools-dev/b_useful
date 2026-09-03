@@ -66,6 +66,7 @@ app_ui <- function(request) {
                 tabPanel("Central-Eastern Mediterranean Sea", value = "results_ce_med",
                          mod_results_ui("results_ce_med"))
                ),
+      tabPanel("Data Downloads", mod_downloads_ui("downloads_1")),
       tabPanel("Resources", mod_resources_ui("resources_1")
       )
     )
