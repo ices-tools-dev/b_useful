@@ -131,91 +131,393 @@ mod_diversity_filters_ui <- function(id) {
 #' diversity_filters Server Functions
 #'
 #' @noRd 
-mod_diversity_filters_server <- function(id, map_parameters, case_study, diversity_data, taxon){
-  moduleServer(id, function(input, output, session){
+mod_diversity_filters_server <- function(
+    id,
+    map_parameters,
+    case_study,
+    diversity_data,
+    taxon
+) {
+  
+  moduleServer(id, function(input, output, session) {
+    
     ns <- session$ns
- 
-    output$year_input <- renderUI({
+    
+    
+    # ------------------------------------------------------------
+    # Validated Arrow Dataset
+    # ------------------------------------------------------------
+    
+    diversity_dataset <- reactive({
       req(diversity_data())
-      years <- unique(diversity_data()$Year)
-      selectInput(ns("year_selector"), label = tooltip(span("Biodiversity year", bs_icon("info-circle")), "Filters will be applied to biodiversity values in the selected year."),
-                  choices = years, selected = max(years[years < 2025]))
+      diversity_data()
     })
     
-    selected_points <- reactiveVal(rep(FALSE, nrow(diversity_data())))
+    
+    # ------------------------------------------------------------
+    # Available years
+    # ------------------------------------------------------------
+    
+    available_years <- reactive({
+      
+      req(diversity_data())
+      
+      diversity_dataset() |>
+        dplyr::select(Year) |>
+        dplyr::distinct() |>
+        dplyr::arrange(Year) |>
+        dplyr::collect() |>
+        dplyr::pull(Year)
+    })
+    
+    
+    output$year_input <- renderUI({
+      
+      req(diversity_data())
+      
+      years <- available_years()
+      
+      req(length(years) > 0)
+      
+      previous_years <- years[years < 2025]
+      
+      default_year <- if (length(previous_years) > 0) {
+        max(previous_years, na.rm = TRUE)
+      } else {
+        max(years, na.rm = TRUE)
+      }
+      
+      
+      selectInput(
+        ns("year_selector"),
+        label = tooltip(
+          span(
+            "Biodiversity year",
+            bs_icon("info-circle")
+          ),
+          "Filters will be applied to biodiversity values in the selected year."
+        ),
+        choices = years,
+        selected = default_year
+      )
+    })
+    
+    
+    # ------------------------------------------------------------
+    # Selected year
+    # ------------------------------------------------------------
+    
+    selected_year <- reactive({
+      
+      req(input$year_selector)
+      
+      as.numeric(input$year_selector)
+    })
+    
+    
+    # ------------------------------------------------------------
+    # Collect only selected year's required columns
+    # ------------------------------------------------------------
+    
+    year_data <- reactive({
+      
+      req(diversity_data())
+      req(selected_year())
+      
+      sel_year <- selected_year()
+      
+      diversity_dataset() |>
+        dplyr::filter(
+          Year == sel_year
+        ) |>
+        dplyr::select(
+          row_id,
+          Year,
+          Cell,
+          longitude,
+          latitude,
+          Richness,
+          shannon,
+          evenness,
+          fric,
+          feve,
+          fdis,
+          fdiv
+        ) |>
+        dplyr::collect()
+    })
+    
+    
+    # ------------------------------------------------------------
+    # Calculate percentile values in R
+    # ------------------------------------------------------------
+    
+    percentile_data <- reactive({
+      
+      req(diversity_data())
+      
+      dat <- year_data()
+      
+      req(nrow(dat) > 0)
+      
+      dat |>
+        dplyr::mutate(
+          richness_percentile = dplyr::percent_rank(Richness),
+          evenness_percentile = dplyr::percent_rank(evenness),
+          shannon_percentile = dplyr::percent_rank(shannon),
+          fric_percentile = dplyr::percent_rank(fric),
+          feve_percentile = dplyr::percent_rank(feve),
+          fdis_percentile = dplyr::percent_rank(fdis),
+          fdiv_percentile = dplyr::percent_rank(fdiv)
+        )
+    })
+    
+    
+    # ------------------------------------------------------------
+    # Apply percentile filters
+    # ------------------------------------------------------------
     
     filtered_data <- reactive({
+      
       req(diversity_data())
+      
       req(input$richness_percentile)
+      req(input$evenness_percentile)
+      req(input$shannon_percentile)
+      req(input$fric_percentile)
+      req(input$feve_percentile)
+      req(input$fdis_percentile)
+      req(input$fdiv_percentile)
       
-      dat <- mutate(diversity_data(), 
-                     richness_percentile = percent_rank(Richness),
-                     evenness_percentile = percent_rank(evenness),
-                     shannon_percentile = percent_rank(shannon),
-                     fric_percentile = percent_rank(fric),
-                     feve_percentile = percent_rank(feve),
-                     fdis_percentile = percent_rank(fdis),
-                     fdiv_percentile = percent_rank(fdiv),
-                     )
+      dat <- percentile_data()
       
-      selected_points(
-        (dat$richness_percentile > input$richness_percentile[1]/100) & 
-          (dat$richness_percentile < input$richness_percentile[2]/100) &
-          (dat$evenness_percentile > input$evenness_percentile[1]/100) & 
-          (dat$evenness_percentile < input$evenness_percentile[2]/100) &
-          (dat$shannon_percentile > input$shannon_percentile[1]/100) & 
-          (dat$shannon_percentile < input$shannon_percentile[2]/100) &
-          (dat$fric_percentile > input$fric_percentile[1]/100) & 
-          (dat$fric_percentile < input$fric_percentile[2]/100) &
-          (dat$feve_percentile > input$feve_percentile[1]/100) & 
-          (dat$feve_percentile < input$feve_percentile[2]/100) &
-          (dat$fdis_percentile > input$fdis_percentile[1]/100) & 
-          (dat$fdis_percentile < input$fdis_percentile[2]/100) &
-          (dat$fdiv_percentile > input$fdiv_percentile[1]/100) & 
-          (dat$fdiv_percentile < input$fdiv_percentile[2]/100)
-      )
-
-      dat %>% filter(selected_points())
+      dat |>
+        dplyr::filter(
+          richness_percentile > input$richness_percentile[1] / 100,
+          richness_percentile < input$richness_percentile[2] / 100,
+          
+          evenness_percentile > input$evenness_percentile[1] / 100,
+          evenness_percentile < input$evenness_percentile[2] / 100,
+          
+          shannon_percentile > input$shannon_percentile[1] / 100,
+          shannon_percentile < input$shannon_percentile[2] / 100,
+          
+          fric_percentile > input$fric_percentile[1] / 100,
+          fric_percentile < input$fric_percentile[2] / 100,
+          
+          feve_percentile > input$feve_percentile[1] / 100,
+          feve_percentile < input$feve_percentile[2] / 100,
+          
+          fdis_percentile > input$fdis_percentile[1] / 100,
+          fdis_percentile < input$fdis_percentile[2] / 100,
+          
+          fdiv_percentile > input$fdiv_percentile[1] / 100,
+          fdiv_percentile < input$fdiv_percentile[2] / 100
+        )
     })
     
     
+    # ------------------------------------------------------------
+    # Selected rows
+    #
+    # This replaces the old full-length logical vector.
+    # ------------------------------------------------------------
+    
+    selected_points <- reactive({
+      
+      req(diversity_data())
+      
+      dat <- filtered_data()
+      
+      dat$row_id
+    })
+    
+    
+    # ------------------------------------------------------------
+    # Colour scale
+    #
+    # Scale is based on all cells in the selected year, preserving
+    # the intent of the old plot.
+    # ------------------------------------------------------------
+    
+    colour_scale_limits <- reactive({
+      
+      req(diversity_data())
+      req(input$diversity_display)
+      
+      dat <- year_data()
+      
+      indicator <- input$diversity_display
+      
+      req(indicator %in% names(dat))
+      
+      range(
+        dat[[indicator]],
+        na.rm = TRUE
+      )
+    })
+    
+    
+    # ------------------------------------------------------------
+    # Map
+    # ------------------------------------------------------------
     
     output$plot_output <- renderPlot({
-      req(filtered_data())
+      
+      req(diversity_data())
       req(map_parameters())
-      col_scale_limits <- range(diversity_data()[[input$diversity_display]])
+      req(input$diversity_display)
+      
+      dat <- filtered_data()
+      
+      req(nrow(dat) > 0)
+      
+      indicator <- input$diversity_display
+      
+      col_scale_limits <- colour_scale_limits()
+      
+      
       ggplot() +
-        geom_point(data = filtered_data(), aes(x = longitude, y = latitude, col = !!sym(input$diversity_display)), size = 2) +
-        scale_color_gradientn(colours = rev(brewer.pal(11, "RdYlBu")), limits = col_scale_limits)+
-        geom_sf(data = map_shape, fill = "grey")+
-        scale_x_continuous(breaks= map_parameters()$coordxmap)+
-        scale_y_continuous(breaks= map_parameters()$coordymap,expand=c(0,0))+
-        coord_sf(xlim=c(map_parameters()$coordslim[1], map_parameters()$coordslim[2]), ylim=c(map_parameters()$coordslim[3],map_parameters()$coordslim[4]))+
-        ylab("Latitude")+
+        
+        geom_sf(
+          data = map_shape,
+          fill = "grey"
+        ) +
+        
+        geom_point(
+          data = dat,
+          aes(
+            x = longitude,
+            y = latitude,
+            colour = .data[[indicator]]
+          ),
+          size = 2
+        ) +
+        
+        scale_color_gradientn(
+          colours = rev(
+            brewer.pal(
+              11,
+              "RdYlBu"
+            )
+          ),
+          limits = col_scale_limits
+        ) +
+        
+        scale_x_continuous(
+          breaks = map_parameters()$coordxmap
+        ) +
+        
+        scale_y_continuous(
+          breaks = map_parameters()$coordymap,
+          expand = c(0, 0)
+        ) +
+        
+        coord_sf(
+          xlim = c(
+            map_parameters()$coordslim[1],
+            map_parameters()$coordslim[2]
+          ),
+          ylim = c(
+            map_parameters()$coordslim[3],
+            map_parameters()$coordslim[4]
+          )
+        ) +
+        
+        ylab("Latitude") +
         xlab("Longitude")
     })
+    
+    
+    # ------------------------------------------------------------
+    # Figure text
+    # ------------------------------------------------------------
+    
     output$fig_text <- renderText({
+      
+      req(diversity_data())
       req(input$year_selector)
+      req(input$diversity_display)
+      req(case_study())
+      req(taxon())
+      
+      req(input$richness_percentile)
+      req(input$evenness_percentile)
+      req(input$shannon_percentile)
+      req(input$fric_percentile)
+      req(input$feve_percentile)
+      req(input$fdis_percentile)
+      req(input$fdiv_percentile)
+      
+      
       diversity_indicator <- input$diversity_display
-      rich_pct <- paste(c(input$richness_percentile[1], input$richness_percentile[2]), collapse = " - ") 
-      eve_pct <- paste(c(input$evenness_percentile[1], input$evenness_percentile[2]), collapse = " - ") 
-      shannon_pct <- paste(c(input$shannon_percentile[1], input$shannon_percentile[2]), collapse = " - ") 
-      fric_pct <- paste(c(input$fric_percentile[1], input$fric_percentile[2]), collapse = " - ") 
-      feve_pct <- paste(c(input$feve_percentile[1], input$feve_percentile[2]), collapse = " - ") 
-      fdis_pct <- paste(c(input$fdis_percentile[1], input$fdis_percentile[2]), collapse = " - ") 
-      fdiv_pct <- paste(c(input$fdiv_percentile[1], input$fdiv_percentile[2]), collapse = " - ")
+      
+      rich_pct <- paste(
+        input$richness_percentile,
+        collapse = " - "
+      )
+      
+      eve_pct <- paste(
+        input$evenness_percentile,
+        collapse = " - "
+      )
+      
+      shannon_pct <- paste(
+        input$shannon_percentile,
+        collapse = " - "
+      )
+      
+      fric_pct <- paste(
+        input$fric_percentile,
+        collapse = " - "
+      )
+      
+      feve_pct <- paste(
+        input$feve_percentile,
+        collapse = " - "
+      )
+      
+      fdis_pct <- paste(
+        input$fdis_percentile,
+        collapse = " - "
+      )
+      
+      fdiv_pct <- paste(
+        input$fdiv_percentile,
+        collapse = " - "
+      )
       
       yr <- input$year_selector
-      ecoregion <- str_to_title(str_replace_all(case_study(), pattern = "_", replacement = " "))
+      
+      ecoregion <- str_to_title(
+        str_replace_all(
+          case_study(),
+          pattern = "_",
+          replacement = " "
+        )
+      )
+      
       taxon <- taxon()
       
-      fig_text <- select_text(project_texts, tab = "fig_text", section = "diversity_filters")
+      
+      fig_text <- select_text(
+        project_texts,
+        tab = "fig_text",
+        section = "diversity_filters"
+      )
+      
       fig_text <- glue(fig_text)
+      
       HTML(fig_text)
     })
     
-    return(list(selected_year = reactive(input$year_selector),
-                selected_points = selected_points))
+    
+    return(
+      list(
+        selected_year = selected_year,
+        selected_points = selected_points
+      )
+    )
   })
 }
     

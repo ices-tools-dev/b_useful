@@ -1,3 +1,65 @@
+# -------------------------------------------------------------------------
+# Helpers
+# -------------------------------------------------------------------------
+
+# Columns which describe the prediction grid rather than individual species
+species_model_id_columns <- c(
+  "Year",
+  "Ecoregion",
+  "ices_ecoregion",
+  "Cell",
+  "longitude",
+  "latitude",
+  "Lon_c",
+  "Lat_c"
+)
+
+
+# Calculate plotting limits from a data frame containing longitude/latitude
+make_map_parameters <- function(dat, padding = 0.05) {
+  
+  req(nrow(dat) > 0)
+  
+  minlong <- min(dat$longitude, na.rm = TRUE)
+  maxlong <- max(dat$longitude, na.rm = TRUE)
+  
+  minlat <- min(dat$latitude, na.rm = TRUE)
+  maxlat <- max(dat$latitude, na.rm = TRUE)
+  
+  long_range <- maxlong - minlong
+  lat_range  <- maxlat - minlat
+  
+  # Avoid zero-width ranges
+  if (long_range == 0) long_range <- 1
+  if (lat_range == 0) lat_range <- 1
+  
+  minlong <- minlong - padding * long_range
+  maxlong <- maxlong + padding * long_range
+  
+  minlat <- minlat - padding * lat_range
+  maxlat <- maxlat + padding * lat_range
+  
+  list(
+    coordslim = c(
+      minlong,
+      maxlong,
+      minlat,
+      maxlat
+    ),
+    coordxmap = round(
+      seq(minlong, maxlong, length.out = 5)
+    ),
+    coordymap = round(
+      seq(minlat, maxlat, length.out = 5)
+    )
+  )
+}
+
+
+# -------------------------------------------------------------------------
+# Species distributions UI
+# -------------------------------------------------------------------------
+
 #' species_distributions UI Function
 #'
 #' @description A shiny Module.
@@ -9,56 +71,42 @@
 #' @importFrom shiny NS tagList
 #' @import ggplot2
 #' @importFrom bslib layout_sidebar sidebar card card_header
+
 mod_species_distributions_ui <- function(id) {
   
   ns <- NS(id)
   
   tagList(
+    
     card(
       
-    layout_columns(
-      col_widths = c(3, 6, 3),
+      layout_columns(
+        col_widths = c(3, 6, 3),
         
-      card(
-        # radioButtons(
-        #   ns("name_form"),
-        #   label = "Select from species Latin binomial name or common name",
-        #   choices = c(
-        #     "Latin" = "latin",
-        #     "Common name" = "common"
-        #   )
-        # ),
+        # ---------------------------------------------------------------
+        # Controls
+        # ---------------------------------------------------------------
         
-        uiOutput(ns("species_selector")),
+        card(
+          uiOutput(ns("species_selector")),
+          uiOutput(ns("model_type_selector")),
+          uiOutput(ns("year_selector")),
+          uiOutput(ns("focus_selector"))
+        ),
         
-        uiOutput(ns("model_type_selector")),
-        uiOutput(ns("year_selector")),
-        uiOutput(ns("focus_selector"))
+        # ---------------------------------------------------------------
+        # Main map
+        # ---------------------------------------------------------------
         
+        uiOutput(ns("main_panel")),
+        
+        # ---------------------------------------------------------------
+        # Right panel
+        # ---------------------------------------------------------------
+        
+        uiOutput(ns("right_panel"))
       ),
       
-      #---------------------------
-      # Main map
-      #---------------------------
-      uiOutput(ns("main_panel")),
-      
-      #---------------------------
-      # Right Column
-      #---------------------------
-      uiOutput(ns("right_panel")),
-      # 
-      # card(
-      #   card_header(
-      #     uiOutput(ns("diagnostics_title"))
-      #   ),
-      #   
-      #   uiOutput(ns("diagnostics_panel"))
-      # )
-      # 
-      #---------------------------
-      # Figure text
-      #---------------------------
-    ),
       card(
         "Figure Text"
       )
@@ -67,9 +115,20 @@ mod_species_distributions_ui <- function(id) {
 }
 
 
+# -------------------------------------------------------------------------
+# Species distributions server
+# -------------------------------------------------------------------------
+
 #' species_distributions Server Functions
 #'
+#' pa_data and biomass_abundance_data are reactive Arrow Dataset handles.
+#' They should remain lazy until a species/year subset is requested.
+#'
+#' model_diagnostics may remain an RDS-backed reactive if it contains
+#' non-tabular model objects.
+#'
 #' @noRd
+
 mod_species_distributions_server <- function(
     id,
     map_parameters,
@@ -83,57 +142,47 @@ mod_species_distributions_server <- function(
     
     ns <- session$ns
     
-    required_columns <- c(
-      "Year",
-      "Ecoregion",
-      "Cell",
-      "longitude",
-      "latitude",
-      "Lon_c",
-      "Lat_c"
-    )
     
-    
-    #============================================================
+    # =====================================================================
     # Selected model type
-    #============================================================
-    #
-    # For now this is fixed to presence/absence.
-    #
-    # When the model-type selector is implemented, this reactive
-    # can simply return input$model_type instead.
-    #
+    # =====================================================================
+    
     selected_model_type <- reactive({
-
-      req(!is.null(input$model_input))
+      
+      req(input$model_input)
+      
       input$model_input
     })
     
     
-    #============================================================
-    # Current model dataset
-    #============================================================
+    # =====================================================================
+    # Current Arrow Dataset
+    #
+    # IMPORTANT:
+    # This returns an Arrow Dataset handle. It does NOT collect the
+    # complete model dataset into R.
+    # =====================================================================
     
     current_model_data <- reactive({
-      req(case_study() != "north_east_atlantic")
-      req(case_study)
+      
+      req(case_study())
       req(selected_model_type())
       
       switch(
         
         selected_model_type(),
         
-        "occurrence" = {
+        occurrence = {
           req(pa_data())
           pa_data()
         },
         
-        "biomass" = {
+        biomass = {
           req(biomass_abundance_data())
           biomass_abundance_data()
         },
         
-        "abundance" = {
+        abundance = {
           req(biomass_abundance_data())
           biomass_abundance_data()
         },
@@ -148,47 +197,124 @@ mod_species_distributions_server <- function(
     })
     
     
-    #============================================================
-    # Species available for the selected model
-    #============================================================
+    # =====================================================================
+    # Species available in current model
+    #
+    # Dataset column names are metadata, so this does not require us to
+    # read the underlying prediction values.
+    # =====================================================================
     
     species <- reactive({
       
-      if (case_study() == "north_east_atlantic"){
-        available_species[["north_east_atlantic"]]
-        
-      } else {
-        
       dat <- current_model_data()
       
-      cols <- colnames(dat)
+      cols <- names(dat)
       
-      cols[!cols %in% c(required_columns, "ecoregion")]
-      }
+      sort(
+        cols[
+          !cols %in% species_model_id_columns
+        ]
+      )
     })
     
     
-    #============================================================
-    # Years available for the selected model
-    #============================================================
+    # =====================================================================
+    # Years available in current model
+    #
+    # Only the Year column is scanned and only the distinct years are
+    # collected into R.
+    # =====================================================================
     
     years <- reactive({
-      
-      if (case_study() == "north_east_atlantic"){
-        available_years[["north_east_atlantic"]]
-        
-      } else {
-        
+      req(current_model_data())
       dat <- current_model_data()
       
-      sort(unique(dat$Year))
-      }
+      req("Year" %in% names(dat))
+      
+      dat |>
+        dplyr::select(Year) |>
+        dplyr::distinct() |>
+        dplyr::arrange() |>
+        dplyr::collect() |>
+        dplyr::pull(Year)
     })
     
     
-    #============================================================
+    # =====================================================================
+    # Available ecoregions
+    #
+    # Only required for the NE Atlantic dual visualisation.
+    # =====================================================================
+    
+    focus_regions <- reactive({
+      
+      req(
+        case_study() == "north_east_atlantic"
+      )
+      req(
+        current_model_data()
+      )
+
+      dat <- current_model_data()
+      
+      req("ices_ecoregion" %in% names(dat))
+      
+      dat |>
+        dplyr::select(ices_ecoregion) |>
+        dplyr::filter(!is.na(ices_ecoregion)) |>
+        dplyr::distinct() |>
+        dplyr::arrange(ices_ecoregion) |>
+        dplyr::collect() |>
+        dplyr::pull(ices_ecoregion)
+    })
+    
+    
+    # =====================================================================
+    # Model selector
+    # =====================================================================
+    
+    output$model_type_selector <- renderUI({
+      
+      req(case_study())
+      
+      choices <- switch(
+        
+        case_study(),
+        
+        western_mediterranean_sea =
+          c(
+            "Occurrence" = "occurrence",
+            "Abundance" = "abundance"
+          ),
+        
+        `central-eastern_mediterranean_sea` =
+          c(
+            "Occurrence" = "occurrence",
+            "Abundance" = "abundance"
+          ),
+        
+        north_east_atlantic =
+          c(
+            "Occurrence" = "occurrence"
+          ),
+        
+        c(
+          "Occurrence" = "occurrence",
+          "Biomass" = "biomass"
+        )
+      )
+      
+      selectInput(
+        ns("model_input"),
+        label = "Select Model Type",
+        choices = choices
+      )
+    })
+    
+    
+    # =====================================================================
     # Species selector
-    #============================================================
+    # =====================================================================
     
     output$species_selector <- renderUI({
       
@@ -201,39 +327,16 @@ mod_species_distributions_server <- function(
       )
     })
     
-    #============================================================
-    # Model selector
-    #============================================================
     
-    output$model_type_selector <- renderUI({
-      
-      req(case_study)
-      
-      if (case_study() %in% c("western_mediterranean_sea", "central-eastern_mediterranean_sea")) {
-        choices <- c("Occurrence" = "occurrence", "Abundance" = "abundance")
-      } else if (case_study() == "north_east_atlantic") {
-        choices <- c("Occurrence" = "occurrence")
-      } else {
-        choices <- c("Occurrence" = "occurrence", "Biomass" = "biomass")
-      } 
-      
-      selectInput(
-        ns("model_input"),
-        label = "Select Model Type",
-        choices = choices
-      )
-    })
-    
-    
-    #============================================================
+    # =====================================================================
     # Year selector
-    #============================================================
+    # =====================================================================
     
     output$year_selector <- renderUI({
       
-      req(years())
-      
       available_years <- years()
+      
+      req(length(available_years) > 0)
       
       default_year <- if (2020 %in% available_years) {
         2020
@@ -249,63 +352,155 @@ mod_species_distributions_server <- function(
       )
     })
     
-    #============================================================
-    # Focus View selector
-    #============================================================
+    
+    # =====================================================================
+    # NE Atlantic focus selector
+    # =====================================================================
     
     output$focus_selector <- renderUI({
       
-      req(case_study() == "north_east_atlantic")
-
-      available_views <- available_regions[["north_east_atlantic"]]
+      if (case_study() != "north_east_atlantic") {
+        return(NULL)
+      }
+      
+      available_views <- focus_regions()
+      
+      req(length(available_views) > 0)
+      
       selectizeInput(
         ns("focus_input"),
         label = "Select Ecoregion for focus view",
-        choices = sort(available_views), 
+        choices = available_views,
+        selected = available_views[[1]]
       )
     })
     
     
-    #============================================================
-    # Filter selected model data
-    #============================================================
+    # =====================================================================
+    # Selected year
+    #
+    # selectizeInput normally returns character values. Convert back to
+    # numeric so Arrow can compare it directly against a numeric Year
+    # field.
+    # =====================================================================
+    
+    selected_year <- reactive({
+      
+      req(input$year_input)
+      
+      input$year_input
+    })
+    
+    
+    # =====================================================================
+    # Broad model data
+    #
+    # THIS IS THE MAIN PERFORMANCE CHANGE.
+    #
+    # Arrow does:
+    #
+    #   1. filter to the selected year
+    #   2. select grid columns
+    #   3. select ONE species column
+    #   4. only then collect into R
+    #
+    # The selected species is renamed to "value" after collection so
+    # downstream plotting code is independent of species name.
+    # =====================================================================
     
     filtered_data <- reactive({
       
       req(input$species_input)
-      req(input$year_input)
+      req(selected_year())
       
-      current_model_data() |>
-        dplyr::select(
-          dplyr::any_of(required_columns),
-          dplyr::all_of(input$species_input)
-        ) |>
-        
+      dat <- current_model_data()
+      
+      species_name <- input$species_input
+      selected_year <- selected_year()
+      dat |>
         dplyr::filter(
-          Year %in% input$year_input
+          Year == selected_year
+        ) |>
+        dplyr::select(
+          dplyr::any_of(species_model_id_columns),
+          dplyr::all_of(species_name)
+        ) |>
+        dplyr::collect() |>
+        dplyr::rename(
+          value = dplyr::all_of(species_name)
         )
     })
     
     
-    #============================================================
+    # =====================================================================
+    # NE Atlantic ecoregion data
+    #
+    # We already collected only one year + one species above, so filtering
+    # the selected ecoregion in R is inexpensive.
+    #
+    # If the broad NEA subset later proves large enough to matter, this can
+    # instead become a second Arrow query with:
+    #
+    #   filter(
+    #     Year == selected_year(),
+    #     Ecoregion == input$focus_input
+    #   )
+    #
+    # =====================================================================
+    
+    focus_data <- reactive({
+      
+      req(
+        case_study() == "north_east_atlantic"
+      )
+      
+      req(input$focus_input)
+      req(filtered_data())
+      
+      dat <- filtered_data()
+      
+      req("ices_ecoregion" %in% names(dat))
+      selected_ecoregion <- input$focus_input
+      dat |>
+        dplyr::filter(
+          ices_ecoregion == selected_ecoregion
+        )
+    })
+    
+    
+    # =====================================================================
+    # Focus-map parameters
+    #
+    # The ordinary/broad map continues to use map_parameters supplied by
+    # the parent results module.
+    #
+    # The focus map derives its extent from the selected NEA ecoregion.
+    # =====================================================================
+    
+    focus_map_parameters <- reactive({
+      
+      req(focus_data())
+      
+      make_map_parameters(
+        focus_data(),
+        padding = 0.05
+      )
+    })
+    
+    
+    # =====================================================================
     # Diagnostics
-    #============================================================
+    # =====================================================================
     
     diagnostics_data <- reactive({
+      
       req(input$species_input)
-      req(input$model_input)
+      req(selected_model_type())
       req(model_diagnostics())
-      # req(selected_model_type())
-
+      
       dat <- model_diagnostics()
       
       req(dat)
-      
-      # If model_diagnostics includes model_type,
-      # filter by both species and model type.
-      #
-      # If model_type has not yet been added to the diagnostics
-      # table, fall back to filtering by species only.
       
       if ("model_component" %in% names(dat)) {
         
@@ -325,25 +520,26 @@ mod_species_distributions_server <- function(
     })
     
     
-    #============================================================
+    # =====================================================================
     # Diagnostics title
-    #============================================================
+    # =====================================================================
     
     output$diagnostics_title <- renderUI({
+      
       req(selected_model_type())
       
       title <- switch(
         
         selected_model_type(),
         
-        "presence_absence" =
-          "Presence/absence model diagnostics",
-        
-        "occurrence" =
+        occurrence =
           "Occurrence model diagnostics",
         
-        "biomass_abundance" =
-          "Biomass/abundance model diagnostics",
+        biomass =
+          "Biomass model diagnostics",
+        
+        abundance =
+          "Abundance model diagnostics",
         
         "Model diagnostics"
       )
@@ -352,12 +548,14 @@ mod_species_distributions_server <- function(
     })
     
     
-    #============================================================
+    # =====================================================================
     # Diagnostics panel
-    #============================================================
+    # =====================================================================
     
     output$diagnostics_panel <- renderUI({
+      
       req(diagnostics_data())
+      
       dat <- diagnostics_data()
       
       if (nrow(dat) == 0) {
@@ -371,9 +569,9 @@ mod_species_distributions_server <- function(
       }
       
       
-      #----------------------------------------------------------
+      # -------------------------------------------------------------------
       # Metric metadata
-      #----------------------------------------------------------
+      # -------------------------------------------------------------------
       
       metric_info <- list(
         
@@ -392,7 +590,10 @@ mod_species_distributions_server <- function(
           min = 0,
           max = 1,
           description =
-            "Difference in mean predicted probability between observed presences and absences."
+            paste(
+              "Difference in mean predicted probability between",
+              "observed presences and absences."
+            )
         ),
         
         r2 = list(
@@ -410,14 +611,17 @@ mod_species_distributions_server <- function(
           min = NA_real_,
           max = NA_real_,
           description =
-            "Magnitude of prediction error. Lower values indicate better performance."
+            paste(
+              "Magnitude of prediction error.",
+              "Lower values indicate better performance."
+            )
         )
       )
       
       
-      #----------------------------------------------------------
-      # Determine which diagnostics are actually available
-      #----------------------------------------------------------
+      # -------------------------------------------------------------------
+      # Determine available diagnostics
+      # -------------------------------------------------------------------
       
       available_metrics <- names(metric_info)[
         
@@ -428,9 +632,13 @@ mod_species_distributions_server <- function(
           function(metric) {
             
             metric %in% dat$metric_name &&
-              length(dat$metric_name) > 0 &&
-              !is.na(dat$metric_name[1])
-            
+              any(
+                !is.na(
+                  dat$value[
+                    dat$metric_name == metric
+                  ]
+                )
+              )
           },
           
           logical(1)
@@ -449,9 +657,9 @@ mod_species_distributions_server <- function(
       }
       
       
-      #----------------------------------------------------------
-      # Create each metric row
-      #----------------------------------------------------------
+      # -------------------------------------------------------------------
+      # Build diagnostic rows
+      # -------------------------------------------------------------------
       
       metric_rows <- lapply(
         
@@ -459,12 +667,12 @@ mod_species_distributions_server <- function(
         
         function(metric) {
           
-          value <- dat$value[dat$metric_name == metric]
+          value <- dat$value[
+            dat$metric_name == metric
+          ][1]
           
           info <- metric_info[[metric]]
           
-          
-          # Normalised position for diagnostics with known 0-1 scales
           has_fixed_scale <-
             !is.na(info$min) &&
             !is.na(info$max)
@@ -493,7 +701,8 @@ mod_species_distributions_server <- function(
             # Metric name + value
             tags$div(
               
-              class = "d-flex justify-content-between align-items-center mb-1",
+              class =
+                "d-flex justify-content-between align-items-center mb-1",
               
               tags$strong(
                 info$label
@@ -520,7 +729,6 @@ mod_species_distributions_server <- function(
                   margin-bottom: 2px;
                 ",
                 
-                # Horizontal line
                 tags$div(
                   style = "
                     position: absolute;
@@ -532,7 +740,6 @@ mod_species_distributions_server <- function(
                   "
                 ),
                 
-                # Dot
                 tags$div(
                   style = paste0(
                     "
@@ -559,7 +766,8 @@ mod_species_distributions_server <- function(
             # Direction / interpretation
             tags$div(
               
-              class = "d-flex justify-content-between",
+              class =
+                "d-flex justify-content-between",
               
               tags$small(
                 class = "text-muted",
@@ -588,7 +796,6 @@ mod_species_distributions_server <- function(
             ),
             
             
-            # Short description
             tags$small(
               class = "text-muted",
               info$description
@@ -604,9 +811,9 @@ mod_species_distributions_server <- function(
     })
     
     
-    #============================================================
-    # Map colour scale title
-    #============================================================
+    # =====================================================================
+    # Map metadata
+    # =====================================================================
     
     map_legend_title <- reactive({
       
@@ -614,30 +821,33 @@ mod_species_distributions_server <- function(
         
         selected_model_type(),
         
-        "occurrence" = "Probability of\nOccurrence",
-        
-        "presence_absence" =
+        occurrence =
           "Probability of\nOccurrence",
         
-        "biomass_abundance" =
-          "Predicted\nBiomass / Abundance",
+        biomass =
+          "Predicted\nBiomass",
+        
+        abundance =
+          "Predicted\nAbundance",
         
         "Prediction"
       )
     })
     
     
-    #============================================================
-    # Map
-    #============================================================
+    # =====================================================================
+    # Common plotting function
+    #
+    # All model maps now use exactly the same plotting machinery.
+    #
+    # NEA simply calls it twice:
+    #   - once with the broad data
+    #   - once with the selected ecoregion
+    # =====================================================================
     
-    output$map <- renderPlot({
+    make_model_map <- function(dat, map_params) {
       
-      dat <- filtered_data()
-      
-      req(dat)
-      req(input$species_input)
-      
+      req(nrow(dat) > 0)
       
       p <- ggplot() +
         
@@ -646,17 +856,14 @@ mod_species_distributions_server <- function(
           aes(
             x = longitude,
             y = latitude,
-            colour = .data[[input$species_input]]
+            colour = value
           ),
           size = 2
         )
       
       
-      #----------------------------------------------------------
-      # Model-specific colour scales
-      #----------------------------------------------------------
-      
-      if (selected_model_type() == "presence_absence") {
+      # Occurrence is always on the probability scale
+      if (selected_model_type() == "occurrence") {
         
         p <- p +
           
@@ -675,12 +882,7 @@ mod_species_distributions_server <- function(
         
       } else {
         
-        # For abundance/biomass models we should not force
-        # predictions onto a 0-1 scale.
-        #
-        # For now ggplot derives the limits from the displayed data.
-        # This can later be replaced by a fixed global scale if desired.
-        
+        # Biomass/abundance values are not constrained to 0-1
         p <- p +
           
           scale_colour_gradientn(
@@ -705,97 +907,181 @@ mod_species_distributions_server <- function(
         ) +
         
         scale_x_continuous(
-          breaks = map_parameters()$coordxmap
+          breaks = map_params$coordxmap
         ) +
         
         scale_y_continuous(
-          breaks = map_parameters()$coordymap,
+          breaks = map_params$coordymap,
           expand = c(0, 0)
         ) +
         
         coord_sf(
           xlim = c(
-            map_parameters()$coordslim[1],
-            map_parameters()$coordslim[2]
+            map_params$coordslim[1],
+            map_params$coordslim[2]
           ),
           ylim = c(
-            map_parameters()$coordslim[3],
-            map_parameters()$coordslim[4]
+            map_params$coordslim[3],
+            map_params$coordslim[4]
           )
         ) +
         
-        ylab("Latitude") +
-        
-        xlab("Longitude")
+        labs(
+          x = "Longitude",
+          y = "Latitude",
+          colour = map_legend_title()
+        )
+    }
+    
+    
+    # =====================================================================
+    # Broad model map
+    #
+    # Used:
+    #   - as the main map for all non-NEA case studies
+    #   - as the smaller contextual map for NEA
+    # =====================================================================
+    
+    output$broad_map <- renderPlot({
+      
+      dat <- filtered_data()
+      
+      req(nrow(dat) > 0)
+      
+      make_model_map(
+        dat = dat,
+        map_params = map_parameters()
+      )
     })
     
-    output$sdm_focus <- renderUI({
-      req(case_study()== "north_east_atlantic")
-
-      req(!is.null(input$focus_input))
-      req(!is.null(input$species_input))
-      req(!is.null(input$year_input))
-      
-      eco_acronym <- region_codes[names(region_codes) == case_study()]
-      spec <- str_replace_all(input$species_input, pattern = " ", replacement = "_")
-      file_name <- paste0(paste(eco_acronym, input$focus_input, spec, input$year_input, sep = "_"), ".png")
-      
-      make_img_tag(filename = file_name,
-                   ns = ns)
-    }) #%>% bindCache(input$focus_input, input$species_input, input$year_input)
     
-    output$sdm_broad <- renderUI({
-      req(case_study()== "north_east_atlantic")
-
-      req(!is.null(input$species_input))
-      req(!is.null(input$year_input))
+    # =====================================================================
+    # NE Atlantic ecoregion-focused map
+    # =====================================================================
+    
+    output$focus_map <- renderPlot({
       
-      eco_acronym <- region_codes[names(region_codes) == case_study()]
-      spec <- str_replace_all(input$species_input, pattern = " ", replacement = "_")
-      file_name <- paste0(paste(eco_acronym, spec, input$year_input, sep = "_"), ".png")
+      req(
+        case_study() == "north_east_atlantic"
+      )
       
-      make_img_tag(filename = file_name,
-                   ns = ns)
-    }) #%>% bindCache(input$focus_input, input$species_input, input$year_input)
+      dat <- focus_data()
+      
+      req(nrow(dat) > 0)
+      
+      make_model_map(
+        dat = dat,
+        map_params = focus_map_parameters()
+      )
+    })
+    
+    
+    # =====================================================================
+    # Main panel
+    #
+    # NEA:
+    #   large ecoregion-focused map
+    #
+    # Other case studies:
+    #   large broad model map
+    # =====================================================================
     
     output$main_panel <- renderUI({
-      if(case_study() == "north_east_atlantic"){
-        card(uiOutput(outputId = ns("sdm_focus")),
+      
+      req(case_study())
+      
+      if (case_study() == "north_east_atlantic") {
+        
+        card(
+          card_header(
+            textOutput(
+              ns("focus_map_title")
+            )
+          ),
+          plotOutput(
+            ns("focus_map"),
+            height = "62vh"
+          ),
           height = "70vh"
         )
+        
       } else {
+        
         card(
-          plotOutput(ns("map")),
+          plotOutput(
+            ns("broad_map"),
+            height = "65vh"
+          ),
           height = "70vh"
         )
       }
     })
     
+    
+    output$focus_map_title <- renderText({
+      
+      req(input$focus_input)
+      
+      paste(
+        input$focus_input,
+        "focus"
+      )
+    })
+    
+    
+    # =====================================================================
+    # Right panel
+    #
+    # NEA keeps the dual visualisation:
+    #
+    #   broad model map
+    #   +
+    #   model diagnostics
+    #
+    # Other case studies only require diagnostics because their broad map
+    # is already displayed in the main panel.
+    # =====================================================================
+    
     output$right_panel <- renderUI({
-      if(case_study() == "north_east_atlantic"){
+      
+      req(case_study())
+      
+      if (case_study() == "north_east_atlantic") {
+        
         tagList(
-          card(
-            card(
-              uiOutput(ns("sdm_broad"))
-            ),
-            
-            card(
-              card_header(
-                uiOutput(ns("diagnostics_title"))
-              ),
-              uiOutput(ns("diagnostics_panel"))
-            ), 
-            height = "70vh"
-          )
-        )
-      } else {
-        tagList(
+          
           card(
             card_header(
-              uiOutput(ns("diagnostics_title"))
+              "North East Atlantic"
             ),
-            
-            uiOutput(ns("diagnostics_panel"))
+            plotOutput(
+              ns("broad_map"),
+              height = "30vh"
+            )
+          ),
+          
+          card(
+            card_header(
+              uiOutput(
+                ns("diagnostics_title")
+              )
+            ),
+            uiOutput(
+              ns("diagnostics_panel")
+            )
+          )
+        )
+        
+      } else {
+        
+        card(
+          card_header(
+            uiOutput(
+              ns("diagnostics_title")
+            )
+          ),
+          uiOutput(
+            ns("diagnostics_panel")
           )
         )
       }
