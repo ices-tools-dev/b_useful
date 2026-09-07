@@ -414,9 +414,8 @@ mod_species_distributions_server <- function(
       req(selected_year())
       
       dat <- current_model_data()
-      
       species_name <- input$species_input
-      selected_year <- selected_year()
+      selected_year <- as.numeric(selected_year())
       dat |>
         dplyr::filter(
           Year == selected_year
