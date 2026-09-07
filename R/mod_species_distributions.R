@@ -844,7 +844,7 @@ mod_species_distributions_server <- function(
     #   - once with the selected ecoregion
     # =====================================================================
     
-    make_model_map <- function(dat, map_params) {
+    make_model_map <- function(dat, map_params, colourbar_width) {
       
       req(nrow(dat) > 0)
       
@@ -929,7 +929,8 @@ mod_species_distributions_server <- function(
           x = "Longitude",
           y = "Latitude",
           colour = map_legend_title()
-        )
+        ) +
+        compact_colourbar(width = colourbar_width)
     }
     
     
@@ -949,7 +950,8 @@ mod_species_distributions_server <- function(
       
       make_model_map(
         dat = dat,
-        map_params = map_parameters()
+        map_params = map_parameters(),
+        colourbar_width = 4
       )
     })
     
@@ -970,7 +972,8 @@ mod_species_distributions_server <- function(
       
       make_model_map(
         dat = dat,
-        map_params = focus_map_parameters()
+        map_params = focus_map_parameters(),
+        colourbar_width = 8
       )
     })
     

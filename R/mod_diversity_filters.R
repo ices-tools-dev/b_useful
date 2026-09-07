@@ -425,7 +425,8 @@ mod_diversity_filters_server <- function(
         ) +
         
         ylab("Latitude") +
-        xlab("Longitude")
+        xlab("Longitude")+
+        compact_colourbar()
     })
     
     

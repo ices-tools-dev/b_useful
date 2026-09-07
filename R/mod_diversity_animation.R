@@ -10,28 +10,24 @@
 mod_diversity_animation_ui <- function(id) {
   ns <- NS(id)
   
-  tagList(
-    card_body(
-      padding = 0,
-      height = "70vh",
+  card_body(
+    padding = 10,
+    height = "70vh",
+    style = "overflow: hidden;",
+    div(
       style = "
-        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       ",
-      div(
+      uiOutput(
+        ns("biodiv_animation"),
         style = "
           width: 100%;
           height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        ",
-        uiOutput(
-          outputId = ns("biodiv_animation"),
-          style = "
-            width: 100%;
-            height: 100%;
-          "
-        )
+        "
       )
     )
   )

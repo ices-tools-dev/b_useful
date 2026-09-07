@@ -180,6 +180,7 @@ mod_time_series_and_trends_server <- function(
             width = "450px",
             
             card(
+              padding = 5,
               withSpinner(
                 mod_diversity_animation_ui(
                   ns("diversity_animation_1")
@@ -188,6 +189,7 @@ mod_time_series_and_trends_server <- function(
             ),
             
             card(
+              padding = 5,
               mod_wp3_trends_ui(
                 ns("trends_1")
               )
