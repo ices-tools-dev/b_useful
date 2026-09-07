@@ -32,10 +32,24 @@ mod_wp3_time_comparison_server <- function(id, map_parameters, case_study, diver
     ns <- session$ns
 
     reactive_data <- reactive({
-      req(diversity_data)
+      req(diversity_data())
       req(selected_years())
-      dat <- diversity_data %>% 
-        filter(Year %in% selected_years())
+      req(diversity_idx())
+      
+      years <- selected_years()
+      indicator <- diversity_idx()
+      
+      dat <- diversity_data() |>
+        dplyr::filter(
+          Year %in% years
+        ) |>
+        dplyr::select(
+          Year,
+          longitude,
+          latitude,
+          indicator
+        ) |>
+        dplyr::collect()
     })
 
     output$div_plot <- renderPlot({

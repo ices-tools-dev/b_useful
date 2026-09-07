@@ -16,10 +16,10 @@ mod_spatial_filters_ui <- function(id) {
          full_screen = T, 
          withSpinner(maplibreOutput(ns("spatial_filters_map")))
          )),
-      nav_panel("Provide WKT Geometry",
-                coming_soon(card(
-                  textInput("wkt_string", "Accepted WKT Geometries are POLYGON, MULTIPOLYGON and GEOMETRY COLLECTION")
-                )))
+      # nav_panel("Provide WKT Geometry",
+      #           coming_soon(card(
+      #             textInput("wkt_string", "Accepted WKT Geometries are POLYGON, MULTIPOLYGON and GEOMETRY COLLECTION")
+      #           )))
     )
   )
 }
@@ -27,80 +27,265 @@ mod_spatial_filters_ui <- function(id) {
 #' spatial_filters Server Functions
 #'
 #' @noRd 
-mod_spatial_filters_server <- function(id, map_parameters, case_study, diversity_data, diversity_spatial, taxon){
-  moduleServer(id, function(input, output, session){
+mod_spatial_filters_server <- function(
+    id,
+    map_parameters,
+    case_study,
+    diversity_spatial,
+    selected_year,
+    taxon
+) {
+  
+  moduleServer(id, function(input, output, session) {
+    
     ns <- session$ns
- 
+    
+    
+    # ------------------------------------------------------------
+    # Low-resolution display grid
+    # ------------------------------------------------------------
+    
     grid_low_res <- reactive({
-      switch(case_study(),
-             "greater_north_sea" = readRDS("data/gns_grid_low_res.rds"), 
-             "western_mediterranean_sea" = readRDS("data/wmed_grid_low_res.rds"),
-             "central-eastern_mediterranean_sea" = readRDS("data/emed_grid_low_res.rds"),
-             "north_east_atlantic" = readRDS("data/nea_grid_low_res.rds"))
+      
+      req(case_study())
+      
+      switch(
+        case_study(),
+        "greater_north_sea" =
+          readRDS("data/gns_grid_low_res.rds"),
+        
+        "western_mediterranean_sea" =
+          readRDS("data/wmed_grid_low_res.rds"),
+        
+        "central-eastern_mediterranean_sea" =
+          readRDS("data/emed_grid_low_res.rds"),
+        
+        "north_east_atlantic" =
+          readRDS("data/nea_grid_low_res.rds")
+      )
     })
     
-    selected_points <- reactiveVal(rep(FALSE, nrow(diversity_data())))
     
-    output$spatial_filters_map<- renderMaplibre({
+    # ------------------------------------------------------------
+    # Validated sf data
+    # ------------------------------------------------------------
+    
+    spatial_data <- reactive({
+      
       req(diversity_spatial())
-      maplibre(bounds = diversity_spatial(), dragRotate=FALSE) %>% 
-        add_circle_layer(id = "centroid",
-                         source = grid_low_res(),
-                         circle_radius = 3,
-                         circle_stroke_color = "white",
-                         circle_stroke_width = 2) %>%
-        add_draw_control(position = "top-left",
-                         freehand = TRUE, 
-                         trash = TRUE,
-                         rectangle = TRUE,
-                         controls = list(
-                           trash = TRUE,
-                           point = FALSE,
-                           line_string = FALSE,
-                           combine_features = FALSE,
-                           uncombine_features = FALSE)
+      
+      dat <- diversity_spatial()
+      
+      req(inherits(dat, "sf"))
+      req("row_id" %in% names(dat))
+      req("Year" %in% names(dat))
+      
+      dat
+    })
+    
+    
+    # ------------------------------------------------------------
+    # Spatial rows for selected year
+    # ------------------------------------------------------------
+    
+    spatial_year_data <- reactive({
+      
+      req(diversity_spatial())
+      req(selected_year())
+      
+      year <- selected_year()
+      
+      dat <- spatial_data()
+      
+      dat[
+        dat$Year == year &
+          !is.na(dat$Year),
+      ]
+    })
+    
+    
+    # ------------------------------------------------------------
+    # Selected row IDs
+    # ------------------------------------------------------------
+    
+    selected_points <- reactiveVal(integer(0))
+    
+    
+    # Reset spatial selection whenever the biodiversity year changes.
+    observeEvent(
+      selected_year(),
+      {
+        selected_points(integer(0))
+      },
+      ignoreInit = TRUE
+    )
+    
+    
+    # ------------------------------------------------------------
+    # Map
+    # ------------------------------------------------------------
+    
+    output$spatial_filters_map <- renderMaplibre({
+      
+      req(diversity_spatial())
+      req(selected_year())
+      
+      dat <- spatial_year_data()
+      
+      req(nrow(dat) > 0)
+      
+      
+      maplibre(
+        bounds = dat,
+        dragRotate = FALSE
+      ) |>
+        
+        add_circle_layer(
+          id = "centroid",
+          source = grid_low_res(),
+          circle_radius = 3,
+          circle_stroke_color = "white",
+          circle_stroke_width = 2
+        ) |>
+        
+        add_draw_control(
+          position = "top-left",
+          freehand = TRUE,
+          trash = TRUE,
+          rectangle = TRUE,
+          controls = list(
+            trash = TRUE,
+            point = FALSE,
+            line_string = FALSE,
+            combine_features = FALSE,
+            uncombine_features = FALSE
+          )
         )
     })
     
-    observeEvent(input$spatial_filters_map_drawn_features, {
-      
-      drawn <- input$spatial_filters_map_drawn_features
-      
-      if (!is.null(drawn)) {
-        brushed_points <- rep(FALSE, times = nrow(diversity_spatial()))
-        drawn_sf <- get_drawn_features(maplibre_proxy("spatial_filters_map"))
+    
+    # ------------------------------------------------------------
+    # Spatial selection
+    # ------------------------------------------------------------
+    
+    observeEvent(
+      input$spatial_filters_map_drawn_features,
+      {
         
-        brushed_points <- tryCatch({
-          within <- st_within(diversity_spatial(), drawn_sf, sparse = FALSE)
-          rowSums(within) >= 1
-        },
-        error = function(e) e)
-        if (inherits(brushed_points, "error")) {
-          showNotification("Invalid shape provided, please delete and try again", type = "error", duration = 10)
-          validate(
-            need(FALSE, paste("ERROR:", conditionMessage(brushed_points)))
-          )
+        req(diversity_spatial())
+        req(selected_year())
+        
+        drawn <- input$spatial_filters_map_drawn_features
+        
+        dat <- spatial_year_data()
+        
+        req(nrow(dat) > 0)
+        
+        
+        # If all shapes have been removed, clear the selection.
+        if (is.null(drawn)) {
+          
+          selected_points(integer(0))
+          
+          return()
         }
-
-        maplibre_proxy("spatial_filters_map") %>% 
-          clear_layer("highlights") %>% 
+        
+        
+        drawn_sf <- get_drawn_features(
+          maplibre_proxy("spatial_filters_map")
+        )
+        
+        
+        if (
+          is.null(drawn_sf) ||
+          nrow(drawn_sf) == 0
+        ) {
+          
+          selected_points(integer(0))
+          
+          return()
+        }
+        
+        
+        brushed_points <- tryCatch(
+          {
+            
+            within <- sf::st_within(
+              dat,
+              drawn_sf,
+              sparse = FALSE
+            )
+            
+            rowSums(within) >= 1
+          },
+          error = function(e) {
+            e
+          }
+        )
+        
+        
+        if (inherits(brushed_points, "error")) {
+          
+          showNotification(
+            "Invalid shape provided, please delete and try again",
+            type = "error",
+            duration = 10
+          )
+          
+          validate(
+            need(
+              FALSE,
+              paste(
+                "ERROR:",
+                conditionMessage(brushed_points)
+              )
+            )
+          )
+          
+          return()
+        }
+        
+        
+        # --------------------------------------------------------
+        # Map highlights
+        # --------------------------------------------------------
+        
+        maplibre_proxy(
+          "spatial_filters_map"
+        ) |>
+          
+          clear_layer(
+            "highlights"
+          ) |>
+          
           add_circle_layer(
             id = "highlights",
-            source = diversity_spatial()[brushed_points,],
+            source = dat[brushed_points, ],
             circle_color = "red",
             circle_radius = 5,
             circle_stroke_color = "white",
             circle_stroke_width = 2
           )
-        selected_points(brushed_points)
+        
+        
+        # --------------------------------------------------------
+        # Persist selected row IDs
+        # --------------------------------------------------------
+        
+        selected_points(
+          dat$row_id[brushed_points]
+        )
       }
-    })
+    )
     
-    return(list(
-      selected_points = reactive(selected_points())
-      # later maybe:
-      # drawn_polygon = reactive(drawn_sf)
-    ))
+    
+    return(
+      list(
+        selected_points = reactive({
+          selected_points()
+        })
+      )
+    )
   })
 }
     
