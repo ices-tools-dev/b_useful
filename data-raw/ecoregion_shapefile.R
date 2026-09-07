@@ -17,6 +17,7 @@ eco_shape <- filter(eco_shape, !Ecoregion %in% c("Bay of Biscay and the Iberian 
 
 
 
+gsa_areas <- st_read(dsn = "data-raw/GFCM_GSA/GFCM_GSA/gfcm_gsa.shp")
 wmed <- gsa_areas %>%
   filter(F_SUBAREA == 37.1,
          !F_GSA_LIB %in% c("GSA 3", "GSA 4")) %>%
