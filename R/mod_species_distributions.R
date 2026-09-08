@@ -88,9 +88,17 @@ mod_species_distributions_ui <- function(id) {
         # ---------------------------------------------------------------
         
         card(
-          uiOutput(ns("species_selector")),
+          selectInput(
+            ns("species_input"),
+            label = "Select Species",
+            choices = character(0)
+          ),
           uiOutput(ns("model_type_selector")),
-          uiOutput(ns("year_selector")),
+          selectizeInput(
+            ns("year_input"),
+            label = "Select Year",
+            choices = character(0)
+          ),
           uiOutput(ns("focus_selector"))
         ),
         
@@ -321,68 +329,100 @@ mod_species_distributions_server <- function(
     
     previous_case_study <- reactiveVal(NULL)
     
-    output$species_selector <- renderUI({
-      
-      available_species <- species()
-      current_case_study <- case_study()
-      
-      req(length(available_species) > 0)
-      req(current_case_study)
-      
-      previous_case <- previous_case_study()
-      
-      # Read the current selection without making renderUI depend on it.
-      current_species <- isolate(input$species_input)
-      
-      same_case_study <-
-        !is.null(previous_case) &&
-        identical(current_case_study, previous_case)
-      
-      selected_species <- if (
-        same_case_study &&
-        !is.null(current_species) &&
-        current_species %in% available_species
-      ) {
-        current_species
-      } else {
-        available_species[[1]]
-      }
-      
-      previous_case_study(current_case_study)
-      
-      selectInput(
-        ns("species_input"),
-        label = "Select Species",
-        choices = available_species,
-        selected = selected_species
-      )
-    })
+    observeEvent(
+      list(case_study(), species()),
+      {
+        
+        current_case <- case_study()
+        available_species <- species()
+        
+        req(current_case)
+        req(length(available_species) > 0)
+        
+        previous_case <- previous_case_study()
+        current_species <- isolate(input$species_input)
+        
+        case_changed <-
+          !is.null(previous_case) &&
+          !identical(current_case, previous_case)
+        
+        selected_species <- if (
+          !case_changed &&
+          !is.null(current_species) &&
+          current_species %in% available_species
+        ) {
+          current_species
+        } else {
+          available_species[[1]]
+        }
+        
+        updateSelectInput(
+          session,
+          "species_input",
+          choices = available_species,
+          selected = selected_species
+        )
+        
+        previous_case_study(current_case)
+      },
+      ignoreInit = FALSE
+    )
     
     
     # =====================================================================
     # Year selector
+    #
+    # Preserve the user's year selection when switching model type
+    # within the same case study. Reset to 2020 when the case study changes.
     # =====================================================================
     
-    output$year_selector <- renderUI({
-      
-      available_years <- years()
-      
-      req(length(available_years) > 0)
-      
-      default_year <- if (2020 %in% available_years) {
-        2020
-      } else {
-        min(available_years)
-      }
-      
-      selectizeInput(
-        ns("year_input"),
-        label = "Select Year",
-        choices = available_years,
-        selected = default_year
-      )
-    })
+    previous_year_case_study <- reactiveVal(NULL)
     
+    observeEvent(
+      list(case_study(), years()),
+      {
+        
+        current_case <- case_study()
+        available_years <- years()
+        
+        req(current_case)
+        req(length(available_years) > 0)
+        
+        previous_case <- previous_year_case_study()
+        current_year <- isolate(input$year_input)
+        
+        case_changed <-
+          !is.null(previous_case) &&
+          !identical(current_case, previous_case)
+        
+        # Default to 2020 where available, otherwise the earliest year
+        default_year <- if (2020 %in% available_years) {
+          2020
+        } else {
+          min(available_years)
+        }
+        
+        selected_year <- if (
+          !case_changed &&
+          !is.null(current_year) &&
+          as.numeric(current_year) %in% available_years
+        ) {
+          as.numeric(current_year)
+        } else {
+          default_year
+        }
+        
+        updateSelectizeInput(
+          session,
+          "year_input",
+          choices = available_years,
+          selected = selected_year
+        )
+        
+        previous_year_case_study(current_case)
+      },
+      ignoreInit = FALSE
+    )
     
     # =====================================================================
     # NE Atlantic focus selector
