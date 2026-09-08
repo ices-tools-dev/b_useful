@@ -1022,7 +1022,7 @@ mod_species_distributions_server <- function(
       make_model_map(
         dat = dat,
         map_params = map_parameters(),
-        colourbar_width = 4
+        colourbar_width = 8
       )
     })
     
@@ -1065,17 +1065,31 @@ mod_species_distributions_server <- function(
       
       if (case_study() == "north_east_atlantic") {
         
-        card(
-          card_header(
-            textOutput(
-              ns("focus_map_title")
+        navset_card_tab(
+          id = ns("map_view"),
+          selected = "broad",
+          height = "70vh",
+          full_screen = TRUE,
+          
+          nav_panel(
+            title = "North East Atlantic",
+            value = "broad",
+            
+            plotOutput(
+              ns("broad_map"),
+              height = "62vh"
             )
           ),
-          plotOutput(
-            ns("focus_map"),
-            height = "62vh"
-          ),
-          height = "70vh"
+          
+          nav_panel(
+            title = "Ecoregion focus",
+            value = "focus",
+            
+            plotOutput(
+              ns("focus_map"),
+              height = "62vh"
+            )
+          )
         )
         
       } else {
@@ -1085,7 +1099,8 @@ mod_species_distributions_server <- function(
             ns("broad_map"),
             height = "65vh"
           ),
-          height = "70vh"
+          height = "70vh",
+          full_screen = TRUE
         )
       }
     })
@@ -1119,45 +1134,16 @@ mod_species_distributions_server <- function(
       
       req(case_study())
       
-      if (case_study() == "north_east_atlantic") {
-        
-        tagList(
-          
-          card(
-            card_header(
-              "North East Atlantic"
-            ),
-            plotOutput(
-              ns("broad_map"),
-              height = "30vh"
-            )
-          ),
-          
-          card(
-            card_header(
-              uiOutput(
-                ns("diagnostics_title")
-              )
-            ),
-            uiOutput(
-              ns("diagnostics_panel")
-            )
-          )
-        )
-        
-      } else {
-        
-        card(
-          card_header(
-            uiOutput(
-              ns("diagnostics_title")
-            )
-          ),
+      card(
+        card_header(
           uiOutput(
-            ns("diagnostics_panel")
+            ns("diagnostics_title")
           )
+        ),
+        uiOutput(
+          ns("diagnostics_panel")
         )
-      }
+      )
     })
   })
 }
