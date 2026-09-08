@@ -314,16 +314,47 @@ mod_species_distributions_server <- function(
     
     # =====================================================================
     # Species selector
+    #
+    # Preserve the user's species selection when switching model type
+    # within the same case study. Reset when the case study changes.
     # =====================================================================
+    
+    previous_case_study <- reactiveVal(NULL)
     
     output$species_selector <- renderUI({
       
-      req(species())
+      available_species <- species()
+      current_case_study <- case_study()
+      
+      req(length(available_species) > 0)
+      req(current_case_study)
+      
+      previous_case <- previous_case_study()
+      
+      # Read the current selection without making renderUI depend on it.
+      current_species <- isolate(input$species_input)
+      
+      same_case_study <-
+        !is.null(previous_case) &&
+        identical(current_case_study, previous_case)
+      
+      selected_species <- if (
+        same_case_study &&
+        !is.null(current_species) &&
+        current_species %in% available_species
+      ) {
+        current_species
+      } else {
+        available_species[[1]]
+      }
+      
+      previous_case_study(current_case_study)
       
       selectInput(
         ns("species_input"),
         label = "Select Species",
-        choices = species()
+        choices = available_species,
+        selected = selected_species
       )
     })
     
