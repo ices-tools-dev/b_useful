@@ -82,6 +82,8 @@ results_data_config <- list(
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
+#' @importFrom arrow open_dataset
+#' @importFrom sfarrow st_read_parquet
 
 mod_results_ui <- function(id) {
   
@@ -200,7 +202,7 @@ mod_results_server <- function(id, case_study) {
       
       req(path)
       
-      arrow::open_dataset(path)
+      open_dataset(path)
     })
     
     
@@ -210,7 +212,7 @@ mod_results_server <- function(id, case_study) {
       
       req(path)
       
-      sfarrow::st_read_parquet(path)
+      st_read_parquet(path)
     })
     
     
@@ -230,7 +232,7 @@ mod_results_server <- function(id, case_study) {
       
       req(path)
       
-      arrow::open_dataset(path)
+      open_dataset(path)
     })
     
     
@@ -241,7 +243,7 @@ mod_results_server <- function(id, case_study) {
       # For example, NE Atlantic currently has no equivalent dataset.
       req(path)
       
-      arrow::open_dataset(path)
+      open_dataset(path)
     })
     
     

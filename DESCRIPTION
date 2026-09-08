@@ -7,8 +7,8 @@ Authors@R:
            role = c("aut", "cre"),
            email = "neilm@ices.dk")
 Description: Enables biodiversity research outputs from the B-Useful project to be accessed and incorporated by managers into Marine Spatial Planning processes.
-License: CC BY 4.0
 Imports: 
+    arrow,
     bsicons,
     bslib,
     config (>= 0.3.2),
@@ -25,6 +25,7 @@ Imports:
     RColorBrewer,
     rlang,
     sf,
+    sfarrow,
     shiny (>= 1.9.1),
     shinycssloaders,
     shinyWidgets,

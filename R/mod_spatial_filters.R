@@ -175,26 +175,19 @@ mod_spatial_filters_server <- function(
         req(diversity_spatial())
         req(selected_year())
         
-        drawn <- input$spatial_filters_map_drawn_features
-        
         dat <- spatial_year_data()
         
         req(nrow(dat) > 0)
         
+        proxy <- maplibre_proxy("spatial_filters_map")
         
-        # If all shapes have been removed, clear the selection.
-        if (is.null(drawn)) {
-          
-          selected_points(integer(0))
-          
-          return()
-        }
+        drawn_sf <- get_drawn_features(proxy)
         
         
-        drawn_sf <- get_drawn_features(
-          maplibre_proxy("spatial_filters_map")
-        )
-        
+        # ----------------------------------------------------------
+        # No polygons remain:
+        # clear both the stored selection AND the highlight layer
+        # ----------------------------------------------------------
         
         if (
           is.null(drawn_sf) ||
@@ -203,9 +196,16 @@ mod_spatial_filters_server <- function(
           
           selected_points(integer(0))
           
+          proxy |>
+            clear_layer("highlights")
+          
           return()
         }
         
+        
+        # ----------------------------------------------------------
+        # Recalculate points falling within the polygons that remain
+        # ----------------------------------------------------------
         
         brushed_points <- tryCatch(
           {
@@ -232,49 +232,43 @@ mod_spatial_filters_server <- function(
             duration = 10
           )
           
-          validate(
-            need(
-              FALSE,
-              paste(
-                "ERROR:",
-                conditionMessage(brushed_points)
-              )
-            )
-          )
-          
           return()
         }
         
         
-        # --------------------------------------------------------
-        # Map highlights
-        # --------------------------------------------------------
-        
-        maplibre_proxy(
-          "spatial_filters_map"
-        ) |>
-          
-          clear_layer(
-            "highlights"
-          ) |>
-          
-          add_circle_layer(
-            id = "highlights",
-            source = dat[brushed_points, ],
-            circle_color = "red",
-            circle_radius = 5,
-            circle_stroke_color = "white",
-            circle_stroke_width = 2
-          )
-        
-        
-        # --------------------------------------------------------
-        # Persist selected row IDs
-        # --------------------------------------------------------
+        # ----------------------------------------------------------
+        # Update stored row IDs
+        # ----------------------------------------------------------
         
         selected_points(
           dat$row_id[brushed_points]
         )
+        
+        
+        # ----------------------------------------------------------
+        # Always remove the previous highlight layer first
+        # ----------------------------------------------------------
+        
+        proxy |>
+          clear_layer("highlights")
+        
+        
+        # ----------------------------------------------------------
+        # Add back only points selected by the polygons that remain
+        # ----------------------------------------------------------
+        
+        if (any(brushed_points)) {
+          
+          proxy |>
+            add_circle_layer(
+              id = "highlights",
+              source = dat[brushed_points, ],
+              circle_color = "red",
+              circle_radius = 5,
+              circle_stroke_color = "white",
+              circle_stroke_width = 2
+            )
+        }
       }
     )
     
