@@ -7,6 +7,12 @@ repo [b_useful_data](https://github.com/ices-tools-dev/b_useful_data) processes 
 
 data-raw/00_prep_project_data.R copies the processed modelling data and preps remaining texts, themes etc. --> Correct paths for your system.
 
+# Purpose
+
+
+The app 
+
+
 ##DST Overview
 ```mermaid
 flowchart LR
