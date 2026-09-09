@@ -1,8 +1,9 @@
 # B USEFUL Decision Support Tool (DST)
 
-This repo contains the application code for the DST.
+This repo contains the application code for the DST, available on the [ICES website - Data - Assessment Tools](https://ices.dk/data/assessment-tools/Pages/B-USEFUL-DST.aspx)
+See https://b-useful.eu/ for details on the b-useful project
 
-repo xxx processes the modelling output data.
+repo [b_useful_data](https://github.com/ices-tools-dev/b_useful_data) processes the modelling output data.
 
 data-raw/00_prep_project_data.R copies the processed modelling data and preps remaining texts, themes etc. --> Correct paths for your system.
 
