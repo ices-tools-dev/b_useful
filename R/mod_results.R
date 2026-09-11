@@ -7,17 +7,6 @@
 
 results_data_config <- list(
   
-  greater_north_sea = list(
-    label = "Greater North Sea",
-    taxon = "fish",
-    diversity = "data/gns_fish_diversity.parquet",
-    diversity_spatial = "data/gns_fish_div_spatial.parquet",
-    trends = "data/gns_fish_diversity_trends.rds",
-    occurrence = "data/gns_species_p_occurrence.parquet",
-    biomass_abundance = "data/gns_species_abundance.parquet",
-    diagnostics = "data/_diagnostics.rds"
-  ),
-  
   `central-eastern_mediterranean_sea` = list(
     label = "Central-Eastern Mediterranean Sea",
     taxon = "demersal",
@@ -60,8 +49,14 @@ results_data_config <- list(
   ),
   
   iceland = list(
-    label = "Iceland",
-    taxon = NULL
+    label = "Icelandic Waters",
+    taxon = "fish",
+    diversity = "data/iceland_fish_diversity.parquet",
+    diversity_spatial = "data/iceland_fish_div_spatial.parquet",
+    trends = "data/iceland_fish_diversity_trends.rds",
+    occurrence = "data/iceland_species_p_occurrence.parquet",
+    biomass_abundance = "data/iceland_species_biomass.parquet",
+    diagnostics = "data/iceland_fish_diagnostics.rds"
   )
 )
 

@@ -314,7 +314,7 @@ mod_diversity_filters_server <- function(
           fdiv_percentile > input$fdiv_percentile[1] / 100,
           fdiv_percentile < input$fdiv_percentile[2] / 100
         )
-    })
+    }) |> debounce(250)
     
     
     # ------------------------------------------------------------

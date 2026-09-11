@@ -14,53 +14,164 @@
 #' @importFrom stringr str_replace_all 
 #' @importFrom icesUtils select_text
 #' @importFrom htmltools css
-mod_home_ui <- function(id){
+mod_home_ui <- function(id) {
+  
   ns <- NS(id)
+  
   tagList(
     modalDialog(
-      title = "Welcome to the Development version of the B-USEFUL Decision Support Tool (DST)",
-      uiOutput(ns("modal")),
+      title = "Loading the Development version of the B-USEFUL Decision Support Tool (DST)",
+      HTML(select_text(project_texts,
+                      "landing_page",
+                      "stakeholder_modal")),
       footer = modalButton("Accept"),
-      size = c("l"),
+      size = "l",
       easyClose = FALSE,
       fade = TRUE
     ),
+    
     card(
-      card_header("Welcome to the B-USEFUL Decision Support Tool", class = "bg-primary"),
-          uiOutput(ns("welcome"))
-    ),
-    card(card_header("What can I do with this tool?", class = "bg-primary"),
-         card_body(uiOutput(ns("what")))),
-   fluidRow(column(6, 
-                  card(min_height = "55vh",
-                      card_body(padding = 0,
-                      leafletOutput(ns("map"),
-                                    width = "100%")),
-                      card_body(height = "90px",
-                                selectizeInput(
-                                  inputId = ns("selected_locations"),
-                                  label = "",
-                                  choices = c("Please select a case study region", c("Greater North Sea", "Western Mediterranean Sea", "Central-Eastern Mediterranean Sea", "North East Atlantic")),
-                                  selected = NULL,
-                                  options = list(dropdownParent = "body"),
-                                  multiple = FALSE,
-                                  width = "100%"))
-            )),
-            column(6, 
-                  card(card_header("How do I use the tool?", class = "bg-primary"),
-                       card_body(uiOutput(ns("how"))))
-                  )
-    ),
-   card(
-      card_header("Partners", class = "bg-primary"),
-      uiOutput(ns("who"))
+      card_header(
+        "Welcome to the B-USEFUL Decision Support Tool",
+        class = "bg-primary"),
+      HTML(select_text(project_texts,
+                       "landing_page",
+                       "welcome"))
+      ),
+    
+    card(
+      card_header(
+        "What can I do with this tool?",
+        class = "bg-primary"),
       
+      card_body(
+        div(
+          style = "
+            column-count: 2;
+            column-gap: 1.5rem;
+            text-align: justify;
+          ",
+          
+          HTML(
+            select_text(
+              project_texts,
+              "landing_page",
+              "what1"
+            )
+          ),
+          
+          HTML(
+            select_text(
+              project_texts,
+              "landing_page",
+              "what2"
+            )
+          )
+        )
+      )
     ),
-    card(card_header("Funded by the European Union", class = "bg-primary"),
-         uiOutput(ns("funding")),
-         card_image(file = NULL, src = "img/normal-reproduction-high-resolution.jpg",
-                         height = "50px", width = "75px", border_radius = "all", container = card_body)
+    
+    fluidRow(
+      
+      column(
+        6,
+        
+        card(
+          min_height = "55vh",
+          
+          card_body(
+            padding = 0,
+            
+            leafletOutput(
+              ns("map"),
+              width = "100%"
+            )
+          ),
+          
+          card_body(
+            height = "90px",
+            
+            selectizeInput(
+              inputId = ns("selected_locations"),
+              label = "",
+              choices = c(
+                "Please select a model from the available options:",
+                "Iceland",
+                "Western Mediterranean Sea",
+                "Central-Eastern Mediterranean Sea",
+                "North East Atlantic"
+              ),
+              selected = NULL,
+              options = list(
+                dropdownParent = "body"
+              ),
+              multiple = FALSE,
+              width = "100%"
+            )
+          )
+        )
+      ),
+      
+      column(
+        6,
+        
+        card(
+          card_header(
+            "How do I use the tool?",
+            class = "bg-primary"
+          ),
+          
+          card_body(
+            HTML(
+              select_text(
+                project_texts,
+                "landing_page",
+                "how"
+              )
+            )
+          )
+        )
+      )
     ),
+    
+    card(
+      card_header(
+        "Partners",
+        class = "bg-primary"
+      ),
+      
+      HTML(
+        select_text(
+          project_texts,
+          "landing_page",
+          "who"
+        )
+      )
+    ),
+    
+    card(
+      card_header(
+        "Funded by the European Union",
+        class = "bg-primary"
+      ),
+      
+      HTML(
+        select_text(
+          project_texts,
+          "landing_page",
+          "funding"
+        )
+      ),
+      
+      card_image(
+        file = NULL,
+        src = "img/normal-reproduction-high-resolution.jpg",
+        height = "50px",
+        width = "75px",
+        border_radius = "all",
+        container = card_body
+      )
+    )
   )
 }
     
@@ -88,11 +199,7 @@ mod_home_server <- function(id, parent_session, selected_locations){
 
       tab_to_show <- switch(
         selected_locations(),
-        "baltic_sea" = "results_baltic",
         "barents_sea" = "results_barents",
-        "bay_of_biscay" = "results_biscay",
-        "greater_north_sea" = "results_gns",
-        "iberia" = "results_iberia",
         "iceland" = "results_iceland",
         "western_mediterranean_sea" = "results_w_med",
         "central-eastern_mediterranean_sea" = "results_ce_med",

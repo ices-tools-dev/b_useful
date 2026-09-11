@@ -18,9 +18,7 @@ app_server <- function(input, output, session) {
       # Update selected_locations based on the results tab selected
       # Dynamically call the appropriate results module
       results_tab <- switch(input$`main-navbar`,
-                            "results_baltic" = "baltic_sea",
                             "results_barents" = "barents_sea",
-                            "results_gns" = "greater_north_sea",
                             "results_iceland" = "iceland",
                             "results_w_med" = "western_mediterranean_sea",
                             "results_ce_med" = "central-eastern_mediterranean_sea",
@@ -37,9 +35,7 @@ app_server <- function(input, output, session) {
     
     # Dynamically call the appropriate results module
     switch(selected_locations(),
-           "baltic_sea" = mod_results_server("results_baltic", case_study = selected_locations),
            "barents_sea" = mod_results_server("results_barents", case_study = selected_locations),
-           "greater_north_sea" = mod_results_server("results_gns", case_study = selected_locations),
            "iceland" = mod_results_server("results_iceland", case_study = selected_locations),
            "western_mediterranean_sea" = mod_results_server("results_w_med", case_study = selected_locations),
            "central-eastern_mediterranean_sea" = mod_results_server("results_ce_med", case_study = selected_locations),

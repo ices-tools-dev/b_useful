@@ -16,10 +16,6 @@ mod_spatial_filters_ui <- function(id) {
          full_screen = T, 
          withSpinner(maplibreOutput(ns("spatial_filters_map")))
          )),
-      # nav_panel("Provide WKT Geometry",
-      #           coming_soon(card(
-      #             textInput("wkt_string", "Accepted WKT Geometries are POLYGON, MULTIPOLYGON and GEOMETRY COLLECTION")
-      #           )))
     )
   )
 }
@@ -51,14 +47,14 @@ mod_spatial_filters_server <- function(
       
       switch(
         case_study(),
-        "greater_north_sea" =
-          readRDS("data/gns_grid_low_res.rds"),
-        
         "western_mediterranean_sea" =
           readRDS("data/wmed_grid_low_res.rds"),
         
         "central-eastern_mediterranean_sea" =
           readRDS("data/emed_grid_low_res.rds"),
+        
+        "iceland" =
+          readRDS("data/iceland_grid_low_res.rds"),
         
         "north_east_atlantic" =
           readRDS("data/nea_grid_low_res.rds")
