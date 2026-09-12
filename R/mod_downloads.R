@@ -10,11 +10,48 @@
 mod_downloads_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    selectInput(ns("model_selection"), label = "Select from available Models",
-                choices = c("North East Atlantic" = "nea", "Western Mediterranean" = "w_med", "Central-Eastern Mediterranean" = "ce_med")),
-    uiOutput(ns("download_panel")),
-    textOutput(ns("download_selection")),
-    downloadButton(ns("download_data"), label = "Download files")
+    card(card_header("Download B-USEFUL Data", class = "bg-primary"),
+    HTML(select_text(project_texts,
+                     "downloads",
+                     "introduction")),
+    bslib::navset_pill_list(
+    nav_panel(title = "Central and Eastern Mediterranean Model", 
+              HTML(select_text(project_texts,
+                              "downloads",
+                              "ce_med")),
+                "Download data bundle for Central and Eastern Mediterranean"),
+              # tags$a(
+              #   href ="",
+              #   "Download data bundle for Central and Eastern Mediterranean")
+              # ),
+    nav_panel(title = "Iceland Model", 
+              HTML(select_text(project_texts,
+                               "downloads",
+                               "iceland")),
+              # tags$a(
+              #   href ="",
+              #   "Download data bundle for Iceland")
+              # ),
+                "Download data bundle for Iceland"),
+    nav_panel(title = "North East Atlantic Model", 
+              HTML(select_text(project_texts,
+                               "downloads",
+                               "ne_atlantic")),
+              # tags$a(
+              #   href ="",
+              #   "Download data bundle for North East Atlantic")
+              # ),
+                "Download data bundle for North East Atlantic"),
+    nav_panel(title = "Western Mediterranean Model", 
+              HTML(select_text(project_texts,
+                               "downloads",
+                               "wmed")),
+              tags$a(
+                href = "https://github.com/ices-tools-dev/b_useful/releases/download/untagged-bfc4b9a8334b035d26ab/b_useful_data_bundle_wmed.zip",
+                "Download data bundle for Western Mediterranean")
+              )
+    )
+  )
   )
 }
     
