@@ -23,3 +23,22 @@ region_codes <- c("iceland" = "iceland",
                   "north_east_atlantic" = "nea")
 
 usethis::use_data(region_codes, overwrite = TRUE)
+
+metric_label <- c("Species Richness" = "richness", 
+                  "Species Richness" = "Richness",
+                  "Evenness" = "evenness",
+                  "Shannon Index" = "shannon",
+                  "Functional Richness" = "fric",
+                  "Functional Evenness" = "feve",
+                  "Functional Divergence" = "fdiv",
+                  "Functional Dispersion" = "fdis",
+                  "Species Richness Trend" = "richness_trend", 
+                  "Species Richness Trend" = "Richness_trend",
+                  "Evenness Trend" = "evenness_trend",
+                  "Shannon Index Trend" = "shannon_trend",
+                  "Functional Richness Trend" = "fric_trend",
+                  "Functional Evenness Trend" = "feve_trend",
+                  "Functional Divergence Trend" = "fdiv_trend",
+                  "Functional Dispersion Trend" = "fdis_trend")
+
+usethis::use_data(metric_label, overwrite = TRUE)

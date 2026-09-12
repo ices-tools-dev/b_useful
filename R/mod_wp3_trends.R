@@ -50,8 +50,10 @@ mod_wp3_trends_server <- function(id, map_parameters, case_study, trends_data, t
         scale_x_continuous(breaks= map_parameters()$coordxmap)+
         scale_y_continuous(breaks= map_parameters()$coordymap,expand=c(0,0))+
         coord_sf(xlim=c(map_parameters()$coordslim[1], map_parameters()$coordslim[2]), ylim=c(map_parameters()$coordslim[3],map_parameters()$coordslim[4]))+
-        ylab("Latitude")+
-        xlab("Longitude")+
+        labs(
+          x = "Longitude",
+          y = "Latitude",
+          colour = names(metric_label[metric_label==diversity_idx()]))+
         compact_colourbar()
       p
     })

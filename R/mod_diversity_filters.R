@@ -424,8 +424,10 @@ mod_diversity_filters_server <- function(
           )
         ) +
         
-        ylab("Latitude") +
-        xlab("Longitude")+
+        labs(
+          x = "Longitude",
+          y = "Latitude",
+          colour = names(metric_label[metric_label==input$diversity_display]))+
         compact_colourbar()
     })
     

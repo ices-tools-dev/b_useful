@@ -64,12 +64,15 @@ mod_wp3_time_comparison_server <- function(id, map_parameters, case_study, diver
         scale_x_continuous(breaks= map_parameters()$coordxmap)+
         scale_y_continuous(breaks= map_parameters()$coordymap,expand=c(0,0))+
         coord_sf(xlim=c(map_parameters()$coordslim[1], map_parameters()$coordslim[2]), ylim=c(map_parameters()$coordslim[3],map_parameters()$coordslim[4]))+
-        ylab("Latitude")+
-        xlab("Longitude")+
+        labs(
+          x = "Longitude",
+          y = "Latitude",
+          colour = names(metric_label[metric_label==diversity_idx()]))+
         compact_colourbar()
       
       if (length(selected_years()>1)){
-        p <- p + facet_wrap(~Year)
+        p <- p + facet_wrap(~Year) +
+          theme(strip.text.x = element_text(size = 14))
       } 
       p
     })

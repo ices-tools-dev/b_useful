@@ -892,13 +892,13 @@ mod_species_distributions_server <- function(
         selected_model_type(),
         
         occurrence =
-          "Probability of\nOccurrence",
+          "Probability of Occurrence",
         
         biomass =
-          "Predicted\nBiomass",
+          "Predicted Biomass",
         
         abundance =
-          "Predicted\nAbundance",
+          "Predicted Abundance",
         
         "Prediction"
       )

@@ -7,6 +7,7 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
+#' @importFrom dplyr rename
 mod_diversity_statistics_ui <- function(id) {
   ns <- NS(id)
   tagList(
@@ -141,7 +142,6 @@ mod_diversity_statistics_server <- function(
       
       req(nrow(dat) > 0)
       
-      
       dat |>
         
         dplyr::select(
@@ -152,7 +152,9 @@ mod_diversity_statistics_server <- function(
           feve,
           fdis,
           fdiv
-        ) |>
+        ) |> 
+        
+        rename(any_of(metric_label)) |> 
         
         dplyr::summarise(
           dplyr::across(
@@ -259,6 +261,8 @@ mod_diversity_statistics_server <- function(
           fdis,
           fdiv
         ) |>
+        
+        rename(any_of(metric_label)) |> 
         
         dplyr::mutate(
           dplyr::across(
