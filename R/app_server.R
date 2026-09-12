@@ -10,6 +10,7 @@ app_server <- function(input, output, session) {
   
   mod_home_server("home_1", parent_session = session, selected_locations = selected_locations)
   mod_story_map_server("story_map_1")
+  mod_downloads_server("downloads_1")
 
   # Monitor navbar selection to update selected_locations
   observeEvent(input$`main-navbar`, {

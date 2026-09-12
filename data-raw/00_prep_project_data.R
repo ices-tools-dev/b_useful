@@ -17,7 +17,7 @@ cat("Project texts prepared\n")
 # source("data-raw/wp2/prep_data_wp3.R")
 # cat("WP3 data prepared\n")
 
-region_codes <- c("greater_north_sea" = "NrS", 
+region_codes <- c("iceland" = "iceland",
                   "western_mediterranean_sea" = "w_med",
                   "central-eastern_mediterranean_sea" = "e_med",
                   "north_east_atlantic" = "nea")
