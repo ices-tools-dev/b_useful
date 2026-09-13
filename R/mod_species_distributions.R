@@ -71,7 +71,7 @@ make_map_parameters <- function(dat, padding = 0.05) {
 #' @importFrom shiny NS tagList
 #' @import ggplot2
 #' @importFrom bslib layout_sidebar sidebar card card_header
-
+#' @importFrom stringr str_to_title str_replace_all
 mod_species_distributions_ui <- function(id) {
   
   ns <- NS(id)
@@ -115,9 +115,10 @@ mod_species_distributions_ui <- function(id) {
         uiOutput(ns("right_panel"))
       ),
       
-      card(
-        "Figure Text"
-      )
+      card(card_header("Figure Information"),
+           uiOutput(ns("fig_text")), 
+           min_height = "15vh")
+      
     )
   )
 }
@@ -1144,6 +1145,37 @@ mod_species_distributions_server <- function(
           ns("diagnostics_panel")
         )
       )
+    })
+    
+    output$fig_text <- renderUI({
+      req(case_study(), input$year_input)
+      
+      if (case_study() == "north_east_atlantic") {
+        req(input$map_view)
+        if (input$map_view == "focus") {
+          case <- input$focus_input
+        } else {
+          case <- case_study()
+        }
+      } else {
+        case <- case_study()
+      }
+    
+      sp <- input$species_input
+      
+      fig_text <- select_text(
+        project_texts,
+        tab = "fig_text",
+        section = paste0("sdm_", selected_model_type())
+      )
+      
+      case <- str_to_title(str_replace_all(case, pattern = "_", " "))
+      if(case == "Iceland") {
+        case <- "Icelandic Waters"
+      }
+      yr <- input$year_input
+      fig_text <- glue(fig_text)
+      HTML(fig_text)
     })
   })
 }
