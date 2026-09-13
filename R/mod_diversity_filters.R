@@ -370,8 +370,6 @@ mod_diversity_filters_server <- function(
       
       dat <- filtered_data()
       
-      req(nrow(dat) > 0)
-      
       indicator <- input$diversity_display
       
       col_scale_limits <- colour_scale_limits()
