@@ -141,13 +141,43 @@ mod_story_map_server <- function(id){
     })
     
     on_section("map", "evidence", {
-  
       maplibre_proxy("map") %>% 
         clear_layer("partner_layer") %>%
         add_circle_layer(
           id = "survey_layer",
           source = trawls,
-          circle_radius = 2
+          circle_radius = 2,
+          circle_color = match_expr(
+            "region",
+            values = c(
+              "EVHOE", "FR-CGFS", "Greenland", "IE-IGFS",
+              "Iceland", "MEDITS", "NIGFS", "NS-IBTS",
+              "NorBTS", "PT-IBTS", "ROCKALL", "SP-ARSA",
+              "SP-NORTH", "SWC-IBTS"
+            ),
+            stops = c(
+              "#1f78b4", "#33a02c", "#e31a1c", "#ff7f00",
+              "#6a3d9a", "#cdce03", "#b2df8a", "#fb9a99",
+              "#fdbf6f", "#cab2d6", "#ffff99", "#b15928",
+              "#17becf", "#e377c2"
+            )
+          ) 
+        ) |> 
+        add_categorical_legend(
+          legend_title = "Scientific Trawl Surveys Used in the B-USEFUL project",
+          values = c(
+            "EVHOE", "FR-CGFS", "Greenland", "IE-IGFS",
+            "Iceland", "MEDITS", "NIGFS", "NS-IBTS",
+            "NorBTS", "PT-IBTS", "ROCKALL", "SP-ARSA",
+            "SP-NORTH", "SWC-IBTS"
+          ),
+          colors = c(
+            "#1f78b4", "#33a02c", "#e31a1c", "#ff7f00",
+            "#6a3d9a", "#cdce03", "#b2df8a", "#fb9a99",
+            "#fdbf6f", "#cab2d6", "#ffff99", "#b15928",
+            "#17becf", "#e377c2"
+          ),
+          circular_patches = TRUE
         )
     })
  

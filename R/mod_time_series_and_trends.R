@@ -127,17 +127,8 @@ mod_time_series_and_trends_server <- function(
         
         req(length(years) > 0)
         
-        # Preserve the spirit of the previous defaults:
-        # first, third, and final available year.
-        default_positions <- unique(
-          pmin(
-            c(1, 3, length(years)),
-            length(years)
-          )
-        )
-        
-        default_years <- years[default_positions]
-        
+        year_details <- summary(years)
+        default_years <- round(year_details[c(1,3,6)], digits = 0)
         
         selectizeInput(
           inputId = ns("year_choices"),
