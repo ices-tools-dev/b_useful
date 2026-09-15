@@ -122,6 +122,13 @@ mod_results_ui <- function(id) {
         mod_interactive_tool_ui(
           ns("interactive_tool_1")
         )
+      ),
+      tabPanel(
+        "Model Information",
+        value = "model_info",
+        mod_model_info_ui(
+          ns("interactive_tool_1")
+        )
       )
     )
   )
