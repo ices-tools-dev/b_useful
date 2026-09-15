@@ -7,32 +7,32 @@
 #' @noRd 
 #'
 #' @importFrom shiny NS tagList 
-mod_model_info_ui <- function(id) {
+mod_model_info_ui <- function(id, model) {
   ns <- NS(id)
   tagList(
   card(  tags$h2("Authors"),
          HTML(select_text(project_texts,
-                          "nea_model",
+                          model,
                           "authors")),
          br(),
          tags$h2("Study Area and Data Availability"),
          HTML(select_text(project_texts,
-                          "nea_model",
+                          model,
                           "area_and_data")),
          br(),
          tags$h2("Trait Selection"),
          HTML(select_text(project_texts,
-                          "nea_model",
+                          model,
                           "traits")),
          br(),
          tags$h2("Environmental Variables"),
          HTML(select_text(project_texts,
-                          "nea_model",
+                          model,
                           "environment")),
          br(),
          tags$h2("Model Setup"),
          HTML(select_text(project_texts,
-                          "nea_model",
+                          model,
                           "model")),
          br(),
          tags$h2("Further Reading"),

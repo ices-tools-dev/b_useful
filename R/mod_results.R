@@ -80,7 +80,7 @@ results_data_config <- list(
 #' @importFrom arrow open_dataset
 #' @importFrom sfarrow st_read_parquet
 
-mod_results_ui <- function(id) {
+mod_results_ui <- function(id, model) {
   
   ns <- NS(id)
   
@@ -127,7 +127,7 @@ mod_results_ui <- function(id) {
         "Model Information",
         value = "model_info",
         mod_model_info_ui(
-          ns("interactive_tool_1")
+          ns("model_info_1"), model = model
         )
       )
     )
