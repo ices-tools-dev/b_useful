@@ -291,7 +291,7 @@ mod_time_series_and_trends_server <- function(
       req(taxon())
       req(input$diversity_idx)
       
-      diversity_indicator <- input$diversity_idx
+      diversity_indicator <- names(metric_label[metric_label == diversity_indicator])
       
       years <- available_years()
       

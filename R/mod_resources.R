@@ -27,7 +27,7 @@ mod_resources_ui <- function(id){
                href   = "https://b-useful.eu/library/deliverables/", 
                target = "_blank", rel = "noopener noreferrer"),
         "and",
-        tags$a(" published articles", 
+        tags$a(" published articles.", 
                href   = "https://b-useful.eu/library/publications/", 
                target = "_blank", rel = "noopener noreferrer"),
         
@@ -36,37 +36,36 @@ mod_resources_ui <- function(id){
          tags$p(
            "The code and data in the B-USEFUL Decision Support Tool are available under the ",
            tags$a(
-             "CC BY 4.0 license",
+             "CC BY 4.0 license.",
              href   = "https://creativecommons.org/licenses/by/4.0/",
              target = "_blank", 
              rel    = "noopener noreferrer"
            ),
          ),
          tags$p(tags$b("Recommended citation:"), "B-USEFUL Decision Support Tool, [date accessed]. ICES, Copenhagen, Denmark.",
-            tags$a("__placeholder__"
-              ,href =  "https://www.ices.dk/data/assessment-tools/Pages/B-USEFUL-DST.aspx"
+            tags$a("https://www.ices.dk/data/assessment-tools/Pages/B-USEFUL-Decision-Support-Tool.aspx"
+              ,href =  "https://www.ices.dk/data/assessment-tools/Pages/B-USEFUL-Decision-Support-Tool.aspx"
             )),
          tags$p(
            "The application's source code is available on ",
            tags$a(
              "GitHub",
-             href   = 'https://github.com/ices-tools-dev/buseful',
+             href   = 'https://github.com/ices-tools-dev/b_useful',
              target = "_blank", 
              rel    = "noopener noreferrer"
            )
          ),
         tags$p(
-          "View the metadata record for the B-USEFUL Decision Support Tool ",
-          tags$a(
-            "__placeholder__",
-            href   = "https://gis.ices.dk/geonetwork/srv/eng/catalog.search#/home",
+          "View the ",
+          tags$a("metadata record",
+            href   = "https://gis.ices.dk/geonetwork/srv/eng/catalog.search#/metadata/0faf46b3-e000-4814-9bae-ec4f8f295315",
             target = "_blank", 
             rel    = "noopener noreferrer"
-          )
+          ), " for the B-USEFUL Decision Support Tool."
         )
     ),
     card(card_header("Contact", class = "bg-primary"),
-         HTML('<p>If you experience problems with the B-USEFUL Decision Support Tool please <a href="accessions@ices.dk">let us know</a>.</p>')),
+         HTML('<p>If you experience problems with the B-USEFUL Decision Support Tool please contact ICES at <a href="mailto:accessions@ices.dk">accessions@ices.dk</a>.</p>')),
   )
 }
     

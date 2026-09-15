@@ -177,7 +177,7 @@ mod_story_map_server <- function(id){
             "#fdbf6f", "#cab2d6", "#ffff99", "#b15928",
             "#17becf", "#e377c2"
           ),
-          circular_patches = TRUE
+          patch_shape = "circle"
         )
     })
  

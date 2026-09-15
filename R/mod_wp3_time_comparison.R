@@ -78,7 +78,8 @@ mod_wp3_time_comparison_server <- function(id, map_parameters, case_study, diver
     })
     
     output$fig_text <- renderText({
-      diversity_indicator <- diversity_idx()
+      
+      diversity_indicator <- names(metric_label[metric_label == diversity_idx()])
       years <- paste(selected_years(), collapse = ", ")
       ecoregion <- str_to_title(str_replace_all(case_study(), pattern = "_", replacement = " "))
       taxon <- taxon()
