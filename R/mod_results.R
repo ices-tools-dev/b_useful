@@ -25,7 +25,7 @@ results_data_config <- list(
     diversity_spatial = "data/wmed_demersal_div_spatial.parquet",
     trends = "data/wmed_demersal_diversity_trends.rds",
     occurrence = "data/wmed_species_p_occurrence.parquet",
-    biomass_abundance = "data/wmed_species_biomass.parquet",
+    biomass_abundance = "data/wmed_species_abundance.parquet",
     diagnostics = "data/wmed_demersal_diagnostics.rds"
   ),
   
