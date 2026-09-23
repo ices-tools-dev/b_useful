@@ -416,7 +416,7 @@ mod_species_distributions_server <- function(
         updateSelectizeInput(
           session,
           "year_input",
-          choices = available_years,
+          choices = sort(available_years),
           selected = selected_year
         )
         

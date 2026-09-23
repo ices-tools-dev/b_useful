@@ -147,7 +147,7 @@ mod_time_series_and_trends_server <- function(
           ),
           
           multiple = TRUE,
-          choices = years,
+          choices = sort(years),
           selected = default_years
         )
       }
