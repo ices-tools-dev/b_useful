@@ -82,9 +82,10 @@ mod_home_ui <- function(id) {
           card_body(
             padding = 0,
             
-            leafletOutput(
+            plotOutput(
               ns("map"),
-              width = "100%"
+              width = "100%",
+              height = "500px"
             )
           ),
           
@@ -183,11 +184,8 @@ mod_home_server <- function(id, parent_session, selected_locations){
     ns <- session$ns
  
     
-    output$map <- renderLeaflet({
-      print("Rendering map")
-      print(paste("eco_shape dimensions:", nrow(eco_shape), "x", ncol(eco_shape)))
-      print(paste("map_shape dimensions:", nrow(map_shape), "x", ncol(map_shape)))
-      map_ecoregion(eco_shape, map_shape)
+    output$map <- renderPlot({
+      map_ecoregion(eco_shape, map_shape, x_padding = 1.1, y_padding = 0.2)
     })
     
     observeEvent(input$selected_locations, {
