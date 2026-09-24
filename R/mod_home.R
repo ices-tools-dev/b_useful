@@ -74,9 +74,11 @@ mod_home_ui <- function(id) {
     fluidRow(
       
       column(
-        6,
+        4,
         
         card(
+          card_header("B-USEFUL study area",
+                      class = "bg-primary"),
           min_height = "55vh",
           
           card_body(
@@ -114,7 +116,7 @@ mod_home_ui <- function(id) {
       ),
       
       column(
-        6,
+        8,
         
         card(
           card_header(
@@ -185,7 +187,7 @@ mod_home_server <- function(id, parent_session, selected_locations){
  
     
     output$map <- renderPlot({
-      map_ecoregion(eco_shape, map_shape, x_padding = 1.1, y_padding = 0.2)
+      map_ecoregion(eco_shape, map_shape, x_padding = 0.6, y_padding = 0.2) 
     })
     
     observeEvent(input$selected_locations, {
